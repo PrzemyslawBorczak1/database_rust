@@ -1,0 +1,51 @@
+WHITESPACE = _{ NEWLINE | SPACE_SEPARATOR}
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+cyte = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+string = @{ (LETTER | ASCII_DIGIT | "_")+ | cyte}
+
+KW_CREATE = _{^"CREATE" | ^"C"}
+KW_KEY = _{^"KEY" | ^"K"}
+KW_FIELDS = _{^"FIELDS" | ^"F"}
+
+KW_INSERT = _{^"INSERT" | ^"I"}
+KW_INTO = {^"INTO" | ^"I"}
+
+
+TYPE = {string_type | int_type | float_type | bool_type}
+string_type = {^"STRING" | ^"STR"}
+int_type = {^"INT" | ^"INTEGER"}
+float_type = {^"FLOAT"}
+bool_type = {^"BOOL" | ^"BOOLEAN"}
+
+
+COLON = _{":"}
+COMA = _{","}
+EQUAL = _{"="}
+FLOAT_SEPARATOR = {"."}
+
+
+sql = _{SOI ~ (create | insert)* ~ EOI}
+
+
+// create query
+create = { KW_CREATE ~ table_name ~ KW_KEY ~ key_name ~ KW_FIELDS ~ pair+ }
+
+table_name = {string }
+key_name = {string }
+field_name = {string }
+
+pair = _{ field_name ~ COLON  ~ TYPE ~ COMA? }
+
+
+// insert query
+insert = {KW_INSERT ~ assigment+ ~ KW_INTO ~ table_name}
+
+float = @{ASCII_DIGIT* ~ FLOAT_SEPARATOR ~ ASCII_DIGIT+}
+int = @{ASCII_DIGIT+}
+bool = {false_r | true_r}
+false_r = {^"FALSE"}
+true_r = {^"TRUE"}
+
+value = { float | int | bool | string }
+assigment = _{field_name ~ EQUAL ~ value ~ COMA?}
+
