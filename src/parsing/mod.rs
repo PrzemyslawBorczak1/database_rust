@@ -1,5 +1,6 @@
-mod parser;
-mod statements;
+pub mod parser;
+pub mod statements;
+
 
 pub use parser::{SQLParser, Rule};
 pub use statements::{Statement, 

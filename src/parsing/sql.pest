@@ -28,13 +28,13 @@ sql = _{SOI ~ (create | insert)* ~ EOI}
 
 
 // create query
-create = { KW_CREATE ~ table_name ~ KW_KEY ~ key_name ~ KW_FIELDS ~ pair+ }
+create = { KW_CREATE ~ table_name ~ KW_KEY ~ key_name ~ KW_FIELDS ~ definition+ }
 
 table_name = {string }
 key_name = {string }
 field_name = {string }
 
-pair = _{ field_name ~ COLON  ~ TYPE ~ COMA? }
+definition = { field_name ~ COLON  ~ TYPE ~ COMA? }
 
 
 // insert query

@@ -1,13 +1,16 @@
 use thiserror::Error;
+use crate::errors::StatementErr;
 
-pub type DatabaseResult<T> = std::result::Result<T, DatabaseError>;
+use super::{ParsingErr};
 
-use super::{ParsingError};
+pub type DatabaseResult<T> = std::result::Result<T, DatabaseErr>;
 
-
-#[derive(Error, Debug)]
-pub enum DatabaseError {
-    #[error(transparent)]
-    ParsingError(#[from]ParsingError),
-
+#[derive(Error, Debug, Clone)]
+pub enum DatabaseErr {
+    #[error("[{statement}] {error}")]
+    ParsingError {
+        #[source]
+        error: ParsingErr,
+        statement: StatementErr,
+    },
 }
