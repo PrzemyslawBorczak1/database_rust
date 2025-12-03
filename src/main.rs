@@ -1,3 +1,10 @@
+
+use database::parsing::SQLParser;
+
+
 fn main() {
-    println!("Hello, world!");
+    let query = "CREATE library KEY id FIELDS id: String, title: String, 
+        CREATE lib Key i F i:String";
+    SQLParser::parse_sql( query);
+
 }
