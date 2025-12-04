@@ -90,6 +90,10 @@ impl Record{
     pub fn add(&mut self, key : String, val : Value) -> Option<Value>{
         self.fields.insert(key, val)
     }
+}
 
-
+impl Default for Record{
+    fn default() -> Self {
+        Self::new()
+    }
 }

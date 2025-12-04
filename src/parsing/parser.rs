@@ -9,7 +9,6 @@ use super::{Statement, CreateSt, InsertSt};
 
 #[derive(Parser)]
 #[grammar = "./src/parsing/sql.pest"]
-
 pub struct SQLParser;
 
 
@@ -41,7 +40,7 @@ impl SQLParser {
             Ok(x) => x,
             Err(e) => return Err(DatabaseErr::ParsingError{
                 statement: StatementErr::NotSpecified,
-                error: ParsingErr::PestError(e)} 
+                error:(ParsingErr::PestError(Box::new(e)))} 
             ),
         };
 
@@ -64,7 +63,7 @@ impl SQLParser {
 
             Rule::EOI =>  Ok(Statement::NoStatement),
 
-            r => return  Err( DatabaseErr::ParsingError {
+            r => Err( DatabaseErr::ParsingError {
                 statement: StatementErr::NotSpecified,
                 error: ParsingErr::UnknownRule(r),
             })
@@ -128,7 +127,7 @@ impl SQLParser{
         Ok(Statement::Create(CreateSt::new(table_name.to_string(), key_name.to_string(), schema)))
     }
     
-    fn parse_create_header<'a, 'b>(pairs : &'a mut Pairs<'b ,Rule>) -> ParsingResult<(&'b str, &'b str)>{
+    fn parse_create_header<'a>(pairs : & mut Pairs<'a ,Rule>) -> ParsingResult<(&'a str, &'a str)>{
       
         let mut it = Self::check_argument(pairs.next())?;
 
@@ -283,7 +282,7 @@ impl SQLParser{
         }  
     }
 
-    fn parse_tail<'a, 'b>(p : &'a mut Pairs<'b, Rule>) -> ParsingResult<&'b str>{
+    fn parse_tail<'a>(p : & mut Pairs<'a, Rule>) -> ParsingResult<&'a str>{
         let next = Self::check_argument(p.next())?;
         Self::check_rule(&next, Rule::table_name)?;
         
