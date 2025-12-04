@@ -1,28 +1,32 @@
-use crate::{errors::DatabaseResult, model::{ AnyDatabase, Database, DatabaseKey, Table, table::AnyTableRef}, parsing::InsertSt};
+use crate::errors::DatabaseResult;
+use crate::model::{ Database, DatabaseKey, Table};
+use crate::parsing::InsertSt;
 
-
+use super::Command;
 
 
 
 #[derive(Debug)]
-pub struct Insert<'a>{
-    tb: &'a mut AnyTableRef,
+pub struct Insert<'a, K :DatabaseKey>{
+    tb: &'a mut Table<K>,
     st: InsertSt,
 }
 
 
-impl<'a> Insert<'a> {
-    pub fn build_exec(db : &mut AnyDatabase, st: InsertSt) -> DatabaseResult<()>{
-        todo!()
+impl<'a, K : DatabaseKey> Insert<'a, K> {
+    pub fn build_exec(db : &mut Database<K>, st: InsertSt) -> DatabaseResult<()>{
+        todo!();
     }
 
 
-    pub fn new(tb: &'a mut AnyTableRef, st: InsertSt) -> Self{
+    pub fn new(tb: &'a mut Table<K>, st: InsertSt) -> Self{
         Self { tb, st }
     }
+}
 
 
-    pub fn execute(self) -> DatabaseResult<()>{
-       Ok(())
+impl<'a, K : DatabaseKey> Command for Insert<'a ,K > {
+    fn execute(self) -> crate::errors::ExecutionResult<()> {
+        todo!()
     }
 }

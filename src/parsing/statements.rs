@@ -1,5 +1,5 @@
 use std::{collections::HashMap};
-use crate::{errors::DatabaseResult, model::{AnyDatabase, Create, Value, ValueType, commands::Insert}};
+use crate::{errors::DatabaseResult, model::{Create, Database, DatabaseKey, Value, ValueType, commands::Insert}};
 
 
 
@@ -11,7 +11,8 @@ pub enum Statement{
 }
 
 impl Statement {
-    pub fn run(self, db : &mut AnyDatabase) -> DatabaseResult<()>{
+    pub fn run<K :DatabaseKey>(self, db : &mut Database<K>) -> DatabaseResult<()>{
+       
         match self{
             Statement::NoStatement => {},
             Statement::Insert(i) => Insert::build_exec(db, i)?,

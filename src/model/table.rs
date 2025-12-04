@@ -67,12 +67,6 @@ impl<K : DatabaseKey> Table<K>{
 }
 
 
-#[derive(Debug)]
-pub enum AnyTableRef{
-    StringTable(Table<String>),
-    IntTable(Table<i64>),
-}
-
 
 #[derive(Debug)]
 pub struct Record{
