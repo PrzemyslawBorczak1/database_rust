@@ -1,8 +1,8 @@
-use std::fmt;
-
 use pest::error;
 use thiserror::Error;
-use crate::{model::ValueType, parsing::Rule};
+
+use crate::model::ValueType;
+use crate::parsing::Rule;
 
 
 
@@ -46,27 +46,9 @@ pub enum ParsingErr {
     
     #[error("Couldnt parse value '{0}' to {1:?}")]
     ParsingFromString(String, ValueType),
+
     
-        
-
-}
-
-#[derive(Debug, Clone)]
-pub enum StatementErr{
-    NotSpecified,
-    Create,
-    Insert,
-}
-
-
-
-impl fmt::Display for StatementErr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let s = match self {
-            StatementErr::NotSpecified => "_",
-            StatementErr::Create => "CREATE",
-            StatementErr::Insert => "INSERT",
-        };
-        write!(f, "{}", s)
-    }
+    #[error("Column '{0}' appeared more than once")]
+    RepeatedColumn(String),
+    
 }

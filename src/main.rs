@@ -1,9 +1,7 @@
 
-use database::parsing::SQLParser;
+use database::{model::{AnyDatabase, Create, Database}, parsing::SQLParser};
 
 use pest::Parser;
-use pest::iterators::{Pair, Pairs};
-use pest_derive::Parser;
 use database::parsing::*;
 
 
@@ -14,7 +12,23 @@ fn main() {
                 INSERT a = 2,  b = true, c = true, d = 9.33 INTO t1";
     let x = SQLParser::parse( Rule::sql,query);
 
-    let x = SQLParser::parse_sql(query);
-    println!("{x:#?}")
+    
+    let sts = SQLParser::parse_sql(query).unwrap();
+
+    let mut db = AnyDatabase::StringDatabase(Database::new());
+
+
+
+
+
+
+    if let Statement::Create(st) = sts[0].clone(){
+        let cmd = Create::new(& mut db, st);
+        let x = cmd.execute();
+        println!("{:#?}", x);
+        println!("{:#?}", db);
+
+    }
+
 
 }

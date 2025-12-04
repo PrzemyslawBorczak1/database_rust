@@ -103,7 +103,7 @@ impl SQLParser{
            })
         };
 
-        let fields = match Self::parse_create_fields(p){
+        let schema = match Self::parse_create_schema(p){
             Ok(x) => x,
             Err(e) => return Err(DatabaseErr::ParsingError{
                 error: e,
@@ -111,7 +111,7 @@ impl SQLParser{
            })
         };
 
-        Ok(Statement::Create(CreateSt::new(table_name.to_string(), key_name.to_string(), fields)))
+        Ok(Statement::Create(CreateSt::new(table_name.to_string(), key_name.to_string(), schema)))
     }
     
     fn parse_create_header<'a, 'b>(pairs : &'a mut Pairs<'b ,Rule>) -> ParsingResult<(&'b str, &'b str)>{
@@ -135,17 +135,13 @@ impl SQLParser{
         Ok((table_name, key_name))
     }
 
-    fn parse_create_fields(pairs : &mut Pairs<Rule>) -> ParsingResult<HashMap<String, ValueType>>{
-        let mut fields = HashMap::new();
+    fn parse_create_schema(pairs : &mut Pairs<Rule>) -> ParsingResult<HashMap<String, ValueType>>{
+        let mut schema = HashMap::new();
         for pair in pairs {
-
             Self::check_rule(&pair, Rule::definition)?;
-
             let mut def = pair.into_inner();
-            
             let field_name = def.next();
             let typ = def.next();
-
             let (field_name,typ) = match (field_name, typ){
                 (None, None | Some(_)) => return Err(ParsingErr::NotEnoughArguments),
 
@@ -153,20 +149,20 @@ impl SQLParser{
                 
                 (Some(f), Some(t)) => (f, t),
             };
-            
             Self::check_rule(&field_name, Rule::field_name)?;
             Self::check_rule(&typ, Rule::TYPE)?;
 
             let typ = Self::check_argument(typ.into_inner().next())?;
-            println!("{:?}",typ);
-            println!("{:?}",typ.as_rule());
             let vt = Self::map_value_type_rule(typ.as_rule())?;
-            println!("{:?}",vt);
-            fields.insert(field_name.as_str().to_string(), vt);
 
+            let fn_str= field_name.as_str().to_string();
+            if schema.contains_key(&fn_str){
+                return Err(ParsingErr::RepeatedColumn(fn_str.clone()));
+            }
 
+            schema.insert(field_name.as_str().to_string(), vt);
         };
-        Ok(fields)
+        Ok(schema)
     }
 }
 
@@ -231,8 +227,13 @@ impl SQLParser{
         let vt = Self::map_value_type_rule(assigment_type.as_rule())?;
         let v = Self::parse_string_value(assigment_type, vt)?;
 
-
-        fields.insert(field_name.as_str().to_string(), v);
+        
+        
+        let fn_str= field_name.as_str().to_string();
+        if fields.contains_key(&fn_str){
+            return Err(ParsingErr::RepeatedColumn(fn_str.clone()));
+        }
+        fields.insert(fn_str, v);
 
         Ok(())
 

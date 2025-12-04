@@ -3,7 +3,7 @@ use crate::model::{Value, ValueType};
 
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement{
     NoStatement,
     Create(CreateSt),
@@ -11,28 +11,28 @@ pub enum Statement{
 }
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct CreateSt{
-    table_name: String,
-    key_name: String,
-    fields: HashMap<String,ValueType>,
+    pub table_name: String,
+    pub key_name: String,
+    pub schema: HashMap<String,ValueType>,
 }
 impl CreateSt{
-    pub fn new(table_name: String,  key_name: String, fields: HashMap<String,ValueType>) -> Self{
+    pub fn new(table_name: String,  key_name: String, schema: HashMap<String,ValueType>) -> Self{
         Self { 
             table_name,
             key_name,
-            fields 
+            schema 
         }
     }
 }
 
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct InsertSt{
-    fields: HashMap<String,Value>,
-    table_name: String,
+    pub fields: HashMap<String,Value>,
+    pub table_name: String,
 
 }
 
