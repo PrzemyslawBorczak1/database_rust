@@ -2,7 +2,7 @@
 use thiserror::Error;
 
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr};
-use crate::model::{ Value, ValueType};
+use crate::model::{ Table, Value, ValueType};
 
 
 pub type ExecutionResult<T> = std::result::Result<T, ExecutionErr>;
@@ -54,6 +54,14 @@ pub enum ExecutionErr {
     #[error("Value '{0:?}' appeared more than once")]
     RepeatedRecord(Value),
 
+    #[error("No key '{0:?}' in table '{1}'")]
+    NoKeyVal(Value, String),
+    
+    #[error("No key '{0}' in table '{1}'")]
+    NoKeyStr(String, String),
+
+    #[error("Couldnt parse '{0}' to {1:?}")]
+    CouldntParse(String, ValueType)
 
     
 }

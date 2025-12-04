@@ -55,7 +55,9 @@ pub enum AnyDatabase {
 pub trait DatabaseKey : Debug + Ord + Clone {
     fn get_type() -> ValueType;
 
-    fn as_key(val : Value) -> Option<Self>;
+    fn as_key_value(val : Value) -> Option<Self>;
+
+    fn as_key_string(val : String) -> Option<Self>;
 }
 
 
@@ -65,7 +67,7 @@ impl DatabaseKey for String{
         ValueType::String
     }
 
-    fn as_key(val : Value) -> Option<Self>{
+    fn as_key_value(val : Value) -> Option<Self>{
         
         match val {
             Value::String(s) => Some(s),
@@ -73,6 +75,9 @@ impl DatabaseKey for String{
         }
     }
 
+    fn as_key_string(val : String) -> Option<Self> {
+        Some(val)   
+    }
   
 }
 
@@ -81,11 +86,18 @@ impl DatabaseKey for i64 {
         ValueType::Int
     }
 
-     fn as_key(val : Value) -> Option<Self>{
-        
+    fn as_key_value(val : Value) -> Option<Self>{
         match val {
             Value::Int(s) => Some(s),
             _ => None,
+        }
+    }
+
+    fn as_key_string(val : String) -> Option<Self> {
+        let p = val.parse::<i64>();
+        match p { 
+            Ok(v) => Some(v),
+            Err(_) => None,
         }
     }
 }

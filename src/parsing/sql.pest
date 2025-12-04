@@ -10,6 +10,8 @@ KW_FIELDS = _{^"FIELDS" | ^"F"}
 KW_INSERT = _{^"INSERT" | ^"I"}
 KW_INTO = {^"INTO" | ^"I"}
 
+KW_DELETE = _{^"DELETE" | ^"D"}
+KW_FROM = _{^"FROM" | ^"F"}
 
 TYPE = {string_type | int_type | float_type | bool_type}
 string_type = {^"STRING" | ^"STR"}
@@ -24,7 +26,11 @@ EQUAL = _{"="}
 FLOAT_SEPARATOR = {"."}
 
 
-sql = _{SOI ~ (create | insert)* ~ EOI}
+sql = _{SOI ~ (
+    create |
+    insert |
+    delete
+    )* ~ EOI}
 
 
 // create query
@@ -49,3 +55,5 @@ true_r = {^"TRUE"}
 value = { float | int | bool | string }
 assigment = {field_name ~ EQUAL ~ value ~ COMA?}
 
+// delete query
+delete = {KW_DELETE ~ key_name ~ KW_FROM ~ table_name}

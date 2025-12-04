@@ -1,5 +1,5 @@
 use std::{collections::HashMap};
-use crate::{errors::DatabaseResult, model::{Create, Database, DatabaseKey, Value, ValueType, commands::Insert}};
+use crate::{errors::DatabaseResult, model::{Create, Database, DatabaseKey, Value, ValueType, commands::{Delete, Insert}}};
 
 
 
@@ -7,7 +7,8 @@ use crate::{errors::DatabaseResult, model::{Create, Database, DatabaseKey, Value
 pub enum Statement{
     NoStatement,
     Create(CreateSt),
-    Insert(InsertSt)
+    Insert(InsertSt),
+    Delete(DeleteSt),
 }
 
 impl Statement {
@@ -17,13 +18,13 @@ impl Statement {
             Statement::NoStatement => {},
             Statement::Insert(i) => Insert::build_exec(db, i)?,
             Statement::Create(c) => Create::build_exec(db, c)?,
+            Statement::Delete(c) => Delete::build_exec(db, c)?,
+
         }
 
         Ok(())
     }
 }
-
-
 
 
 
@@ -58,6 +59,18 @@ impl InsertSt{
     }
 }
 
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct DeleteSt{
+    pub table_name: String,
+    pub key : String,
+}
+
+impl DeleteSt {
+    pub fn new(table_name : String, key : String) -> Self{
+        Self {table_name, key}
+    }
+}
 
 
 

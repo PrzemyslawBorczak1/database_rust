@@ -5,7 +5,7 @@ use pest_derive::Parser;
 use std::collections::HashMap;
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr, ParsingErr, ParsingResult};
 use crate::model::{AnyDatabase, Value, ValueType};
-use super::{Statement, CreateSt, InsertSt};
+use super::{Statement, CreateSt, InsertSt, DeleteSt};
 
 #[derive(Parser)]
 #[grammar = "./src/parsing/sql.pest"]
@@ -60,6 +60,7 @@ impl SQLParser {
 
             Rule::create => Self::build_create(&mut pair.into_inner()),
             Rule::insert => Self::build_insert(& mut pair.into_inner()),
+            Rule::delete => Self::build_delete(& mut pair.into_inner()),
 
             Rule::EOI =>  Ok(Statement::NoStatement),
 
@@ -292,7 +293,23 @@ impl SQLParser{
 
     }
 
+impl SQLParser{
+    fn build_delete(p :&mut Pairs<Rule>) -> DatabaseResult<Statement>{
+        let key = 
+            ParsingErr::wrap_result(
+                Self::check_argument(p.next()),
+                StatementErr::Delete)?.as_str();
 
+        let table_name = 
+            ParsingErr::wrap_result(
+                Self::check_argument(p.next()),
+                StatementErr::Delete)?.as_str();
+        
+        Ok(Statement::Delete(DeleteSt::new(table_name.to_string(), key.to_string())))
+    }
+
+
+}
 
 #[cfg(test)]
 pub mod test{

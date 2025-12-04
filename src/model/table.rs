@@ -56,6 +56,10 @@ impl<K : DatabaseKey> Table<K>{
         self.records.insert(key, val) 
     }
 
+    pub fn delete_record(&mut self, key : &K) -> Option<Record>{
+        self.records.remove(key)
+    }
+
 
     pub fn get_records(&self) -> &BTreeMap<K, Record>{
         &self.records

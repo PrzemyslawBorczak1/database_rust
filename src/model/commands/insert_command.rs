@@ -47,7 +47,7 @@ impl<'a, K : DatabaseKey> Insert<'a, K> {
             Some(x) => x.clone(),
         };
 
-        let val_key = match K::as_key(pk_v.clone()) {
+        let val_key = match K::as_key_value(pk_v.clone()) {
             None => return Err(ExecutionErr::WrongPKType {
                 expected: K::get_type(),
                 got: pk_v.get_type()
@@ -62,8 +62,7 @@ impl<'a, K : DatabaseKey> Insert<'a, K> {
         Ok((pk, pk_v, val_key))
     }
 
-    fn fill_and_validate(   &self, rec: &mut Record,   pk: &String   ) -> crate::errors::ExecutionResult<()> 
-    {
+    fn fill_and_validate(   &self, rec: &mut Record,   pk: &String   ) -> crate::errors::ExecutionResult<()> {
         let schema = self.table.get_schema();
 
         for (field, val) in self.st.fields.clone() {

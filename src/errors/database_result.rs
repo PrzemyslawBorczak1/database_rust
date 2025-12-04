@@ -31,6 +31,7 @@ pub enum StatementErr{
     NotSpecified,
     Create,
     Insert,
+    Delete,
 }
 
 
@@ -40,6 +41,7 @@ impl StatementErr{
             StatementErr::NotSpecified => "_",
             StatementErr::Create => "CREATE",
             StatementErr::Insert => "INSERT",
+            StatementErr::Delete => "DELETE"
         }
     }
 }
