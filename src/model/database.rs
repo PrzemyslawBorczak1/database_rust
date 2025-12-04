@@ -2,6 +2,8 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
+use crate::model::Value;
+
 use super::{Table, ValueType};
 
 
@@ -29,6 +31,10 @@ impl<K : DatabaseKey> Database<K> {
     pub fn get_tables(&self) -> &HashMap<String, Table<K>>{
         &self.tables
     }
+
+    pub fn get_table<'a>(&'a mut self, table_name: &String) ->  Option<&'a mut Table<K>>{
+        self.tables.get_mut(table_name)
+    }
 }
 
 
@@ -43,6 +49,7 @@ pub enum AnyDatabase {
 pub trait DatabaseKey : Debug + Ord + Clone {
     fn get_type() -> ValueType;
 
+    fn as_key(val : Value) -> Option<Self>;
 }
 
 
@@ -52,12 +59,28 @@ impl DatabaseKey for String{
         ValueType::String
     }
 
+    fn as_key(val : Value) -> Option<Self>{
+        
+        match val {
+            Value::String(s) => Some(s),
+            _ => None,
+        }
+    }
+
   
 }
 
 impl DatabaseKey for i64 {
     fn get_type() -> ValueType{
         ValueType::Int
+    }
+
+     fn as_key(val : Value) -> Option<Self>{
+        
+        match val {
+            Value::Int(s) => Some(s),
+            _ => None,
+        }
     }
 }
 

@@ -8,7 +8,9 @@ use database::parsing::*;
 fn main() {
     let query = 
                 "CREATE library KEY id FIELDS id: String, title: Int, 
-                CREATE lib Key i F i:String,";
+                CREATE lib Key i F i:String,
+                Insert id = a title = 1 I library
+                Insert id = b title = 1 I library";
     let x = SQLParser::parse( Rule::sql,query);
 
     

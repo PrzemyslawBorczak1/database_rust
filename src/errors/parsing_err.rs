@@ -1,7 +1,8 @@
 use pest::error;
 use thiserror::Error;
 
-use crate::model::ValueType;
+use crate::errors::{DatabaseErr, DatabaseResult, StatementErr};
+use crate::model::{ ValueType};
 use crate::parsing::Rule;
 
 
@@ -51,4 +52,14 @@ pub enum ParsingErr {
     #[error("Column '{0}' appeared more than once")]
     RepeatedColumn(String),
     
+}
+
+
+impl ParsingErr{
+    pub fn wrap_result<T>(parsing_result : ParsingResult<T>, statement_err : StatementErr) -> DatabaseResult<T>{
+        match parsing_result{
+            Ok(x) => Ok(x),
+            Err(e) => Err(DatabaseErr::ParsingError { error: e, statement: statement_err })
+        }
+    }
 }

@@ -1,4 +1,4 @@
-use crate::errors::{ExecutionErr, ExecutionResult, DatabaseErr, DatabaseResult, StatementErr};
+use crate::errors::{ExecutionErr, ExecutionResult, DatabaseResult, StatementErr};
 use crate::model::{Database, DatabaseKey, Table};
 use crate::parsing::CreateSt;
 use super::Command;
@@ -16,15 +16,15 @@ pub struct Create<'a, K : DatabaseKey>{
 impl<'a, K : DatabaseKey> Create<'a, K> {
     pub fn build_exec(db: &'a mut Database<K>, st: CreateSt) -> DatabaseResult<()>{
         let c = Self::new(db,st);
-        match c.execute(){
-            Ok(_) => Ok(()),
-            Err(e) => Err(DatabaseErr::ExecutionError { error: e, statement: StatementErr::Create })
-        }
+
+        ExecutionErr::wrap_result(c.execute(), StatementErr::Create)
+
     }
 
     pub fn new(db: &'a mut Database<K>, st: CreateSt) -> Self{
         Self { db, st }
     }
+
 }
 
 

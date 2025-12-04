@@ -48,6 +48,14 @@ impl<K : DatabaseKey> Table<K>{
             table_name 
         }
     }   
+    pub fn contains(&self, key: &K) -> bool{
+        self.records.contains_key(key)   
+    }
+
+     pub fn add_record(&mut self, key: K, val: Record) -> Option<Record>{
+        self.records.insert(key, val) 
+    }
+
 
     pub fn get_records(&self) -> &BTreeMap<K, Record>{
         &self.records
@@ -73,3 +81,15 @@ pub struct Record{
     pub fields : HashMap<String, Value>,
 }
 
+
+impl Record{
+    pub fn new() -> Self{
+        Self { fields: HashMap::new() }
+    }   
+
+    pub fn add(&mut self, key : String, val : Value) -> Option<Value>{
+        self.fields.insert(key, val)
+    }
+
+
+}

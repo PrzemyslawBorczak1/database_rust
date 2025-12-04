@@ -29,8 +29,6 @@ impl SQLParser {
             }
         }
        
-
-
         Ok(())
     }
 
@@ -107,9 +105,6 @@ impl SQLParser {
             Ok(x) => Ok(x),
             Err(_) => Err(ParsingErr::ParsingFromString(st.to_string(), vt))
         }
-
-
-
     }
 
 }
@@ -118,22 +113,18 @@ impl SQLParser {
 // parsing of create statement
 impl SQLParser{
     fn build_create(p : &mut Pairs<Rule>) -> DatabaseResult<Statement>{
-        let (table_name, key_name) = match Self::parse_create_header( p){
-           Ok(x) => x,
-           Err(e) => return Err(DatabaseErr::ParsingError{
-                error: e,
-                statement: StatementErr::Create,
-           })
-        };
 
-        let schema = match Self::parse_create_schema(p){
-            Ok(x) => x,
-            Err(e) => return Err(DatabaseErr::ParsingError{
-                error: e,
-                statement: StatementErr::Create,
-           })
-        };
-
+        let (table_name, key_name) =
+            ParsingErr::wrap_result(
+                Self::parse_create_header( p), 
+                StatementErr::Create)?;
+        
+        let schema = 
+            ParsingErr::wrap_result(
+                Self::parse_create_schema(p), 
+                StatementErr::Create)?;
+        
+        
         Ok(Statement::Create(CreateSt::new(table_name.to_string(), key_name.to_string(), schema)))
     }
     
@@ -192,24 +183,17 @@ impl SQLParser{
 // parsing of insert statement
 impl SQLParser{
     fn build_insert(p :&mut Pairs<Rule>) -> DatabaseResult<Statement>{
-        let fields = Self::parse_insert_assigment(p);
-        let fields= match fields{
-            Ok(x) => x,
-            Err(e) => return Err(DatabaseErr::ParsingError {
-                error: e,
-                statement: StatementErr::Insert 
-            })
-        };
+        let fields=
+            ParsingErr::wrap_result(
+                Self::parse_insert_assigment(p),
+                StatementErr::Insert)?;
         
-        let table_name = match Self::parse_tail(p){
-            Ok(x) => x,
-            Err(e) =>return Err(DatabaseErr::ParsingError {
-                error: e,
-                statement: StatementErr::Insert
-            })
 
-        };
-
+        let table_name =
+            ParsingErr::wrap_result(   
+                Self::parse_tail(p),
+                StatementErr::Insert)?;
+                
         Ok(Statement::Insert(InsertSt::new(table_name.to_string(), fields)))
     }
 
@@ -308,7 +292,6 @@ impl SQLParser{
 
 
     }
-
 
 
 
