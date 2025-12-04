@@ -1,5 +1,5 @@
 use crate::errors::{DatabaseResult, ExecutionErr, ExecutionResult, StatementErr};
-use crate::model::{ Database, DatabaseKey, Table, Record};
+use crate::model::{ Database, DatabaseKey, Record, Table, Value};
 use crate::parsing::InsertSt;
 
 use super::Command;
@@ -35,73 +35,92 @@ impl<'a, K : DatabaseKey> Insert<'a, K> {
     pub fn new(tb: &'a mut Table<K>, st: InsertSt) -> Self{
         Self { table: tb, st }
     }
+
+
+
+
+    fn handle_pk(&self) -> crate::errors::ExecutionResult<(&String, Value, K)> {
+        let pk = self.table.get_pk();
+
+        let pk_v = match self.st.fields.get(pk) {
+            None => return Err(ExecutionErr::NoPK(pk.clone())),
+            Some(x) => x.clone(),
+        };
+
+        let val_key = match K::as_key(pk_v.clone()) {
+            None => return Err(ExecutionErr::WrongPKType {
+                expected: K::get_type(),
+                got: pk_v.get_type()
+            }),
+            Some(x) => x,
+        };
+
+        if self.table.contains(&val_key) {
+            return Err(ExecutionErr::RepeatedRecord(pk_v.clone()));
+        }
+
+        Ok((pk, pk_v, val_key))
+    }
+
+    fn fill_and_validate(   &self, rec: &mut Record,   pk: &String   ) -> crate::errors::ExecutionResult<()> 
+    {
+        let schema = self.table.get_schema();
+
+        for (field, val) in self.st.fields.clone() {
+            if &field == pk {
+                continue;
+            }
+
+            let ex_vt = match schema.get(&field) {
+                None => return Err(ExecutionErr::NoDef(field)),
+                Some(vt) => vt,
+            };
+
+            let got_vt = val.get_type();
+
+            if ex_vt != &got_vt {
+                return Err(ExecutionErr::BadType {
+                    field,
+                    got: got_vt,
+                    expected: ex_vt.clone(),
+                });
+            }
+
+            if rec.add(field.clone(), val).is_some() {
+                return Err(ExecutionErr::RepeatedColumn(field));
+            }
+        }
+
+        Ok(())
+    }
+
+    fn check_len(&self) -> crate::errors::ExecutionResult<()> {
+        let schema = self.table.get_schema();
+        if schema.len() != self.st.fields.len() {
+            return Err(ExecutionErr::WrongArgLen {
+                table: self.st.table_name.clone(),
+                expected: schema.len(),
+                got: self.st.fields.len()
+            });
+        }
+        Ok(())
+    }
+    
+
 }
 
 impl<'a, K : DatabaseKey> Command for Insert<'a ,K > {
     fn execute(self) -> crate::errors::ExecutionResult<()> {
         let mut rec = Record::new();
+        self.check_len()?;
 
-        let schema = self.table.get_schema();
+        let (pk, pk_v, val_key) = self.handle_pk()?;
 
-        let expected = schema.len() ;
-        let got = self.st.fields.len();
+        self.fill_and_validate(&mut rec, &pk)?;
 
-        if expected != got{
-            return Err(ExecutionErr::WrongArgLen{
-                table: self.st.table_name.clone(),
-                expected,
-                got
-            })
-        }
-        
-        let pk  = self.table.get_pk();
-
-        let pk_v = match self.st.fields.get(pk){
-            None => return Err(ExecutionErr::NoPK(pk.clone())),
-            Some(x) => x.clone(),
-        };
-        
-        let val_key = match K::as_key(pk_v.clone()) {
-            None =>  return Err(ExecutionErr::WrongPKType { expected: K::get_type(), got:  pk_v.get_type()}),
-            Some(x) => x,
-        };
-
-        if self.table.contains(&val_key){
+        if self.table.add_record(val_key, rec).is_some() {
             return Err(ExecutionErr::RepeatedRecord(pk_v.clone()));
         }
-        
-
-
-        
-        for (field, val) in self.st.fields{
-            if &field == pk{
-                continue;
-            }
-
-
-            let ex_vt  = match schema.get(&field){
-                None => return Err(ExecutionErr::NoDef(field)),
-                Some(vt) => vt,
-            };
-
-
-            let got_vt = val.get_type();
-
-            if ex_vt != &got_vt{
-                return Err(ExecutionErr::BadType { field, got: got_vt, expected: ex_vt.clone()});
-            }
-
-
-            if rec.add(field.clone(), val).is_some(){
-                return Err(ExecutionErr::RepeatedColumn(field.clone()));
-            }
-        }
-
-
-        if self.table.add_record(val_key, rec).is_some(){
-            return Err(ExecutionErr::RepeatedRecord(pk_v.clone()));
-        }
-
 
         Ok(())
     }
