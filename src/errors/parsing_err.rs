@@ -2,7 +2,7 @@ use std::fmt;
 
 use pest::error;
 use thiserror::Error;
-use crate::parsing::{Rule};
+use crate::{model::ValueType, parsing::Rule};
 
 
 
@@ -39,7 +39,14 @@ pub enum ParsingErr {
     #[error("No matching type found for rule: {0:?}")]
     UnknownTypeForRule(Rule),
 
+    
+    #[error("No value specified for field: '{0}'")]
+    NoValue(String),
 
+    
+    #[error("Couldnt parse value '{0}' to {1:?}")]
+    ParsingFromString(String, ValueType),
+    
         
 
 }

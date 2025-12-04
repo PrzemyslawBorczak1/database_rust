@@ -1,4 +1,4 @@
 pub mod table;
 
 
-pub use table::{ValueType};
+pub use table::{ValueType, Value};

@@ -38,7 +38,7 @@ definition = { field_name ~ COLON  ~ TYPE ~ COMA? }
 
 
 // insert query
-insert = {KW_INSERT ~ assigment+ ~ KW_INTO ~ table_name}
+insert = {KW_INSERT ~ assigment+ ~ KW_INTO ~ table_name ~ COMA?}
 
 float = @{ASCII_DIGIT* ~ FLOAT_SEPARATOR ~ ASCII_DIGIT+}
 int = @{ASCII_DIGIT+}
@@ -47,5 +47,5 @@ false_r = {^"FALSE"}
 true_r = {^"TRUE"}
 
 value = { float | int | bool | string }
-assigment = _{field_name ~ EQUAL ~ value ~ COMA?}
+assigment = {field_name ~ EQUAL ~ value ~ COMA?}
 
