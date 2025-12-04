@@ -63,7 +63,7 @@ pub mod test{
     use super::*;
     use crate::{model::ValueType, parsing::*};
     #[test]
-    pub fn test() {
+    pub fn execute_create() {
         let query =
             "CREATE a KEY a FIELDS a: String, c: Int, 
             CREATE b KEY a FIELDS a: String, b: Float c: Bool";

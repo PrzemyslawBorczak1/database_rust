@@ -76,7 +76,7 @@ impl<K : DatabaseKey> Table<K>{
 
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Record{
     pub fields : HashMap<String, Value>,
 }

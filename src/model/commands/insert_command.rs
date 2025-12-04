@@ -43,7 +43,7 @@ impl<'a, K : DatabaseKey> Command for Insert<'a ,K > {
 
         let schema = self.table.get_schema();
 
-        let expected = schema.len();
+        let expected = schema.len() ;
         let got = self.st.fields.len();
 
         if expected != got{
@@ -106,4 +106,62 @@ impl<'a, K : DatabaseKey> Command for Insert<'a ,K > {
         Ok(())
     }
     
+}
+
+
+
+
+#[cfg(test)]
+pub mod test{
+    use std::collections::HashMap;
+
+    use super::*;
+    use crate::{model::{Create, Value}, parsing::*};
+    #[test]
+    pub fn execute_insert() {
+        let query =
+            "CREATE t KEY a FIELDS a: String, c: Bool,  b : Float
+            Insert a =  a, b = 1.0 c = false into t
+            Insert a =  b, b = 3.0 c = true into t";
+
+        let sts = SQLParser::parse_sql(query).unwrap();
+        let mut db: Database<String> = Database::new();
+
+         if let Statement::Create(st) = sts[0].clone() {
+            Create::new(&mut db, st).execute().unwrap()
+        } else {
+            panic!();
+        }
+
+
+        if let Statement::Insert(st) = sts[1].clone() {
+            Insert::from(&mut db, st).unwrap().execute().unwrap()
+        } else {
+            panic!();
+        }
+
+        if let Statement::Insert(st) = sts[2].clone() {
+            Insert::from(&mut db, st).unwrap().execute().unwrap()
+        } else {
+            panic!();
+        }
+
+
+        let table = db.get_table(&"t".to_string()).unwrap();
+        let rec = table.get_records();
+
+        let exp = HashMap::from([
+            ("b".to_string(), Value::Float(1.0)),
+            ("c".to_string(), Value::Bool(false)),
+        ]);
+        assert_eq!(rec.get(&"a".to_string()).unwrap().fields, exp);
+
+
+         let exp = HashMap::from([
+            ("b".to_string(), Value::Float(3.0)),
+            ("c".to_string(), Value::Bool(true)),
+        ]);
+        assert_eq!(rec.get(&"b".to_string()).unwrap().fields, exp);
+
+    }
 }
