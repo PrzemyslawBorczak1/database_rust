@@ -1,11 +1,9 @@
 
-use crate::{ errors::{ExecutionErr, ExecutionResult}, model::{Database, DatabaseKey, Table, ValueType}};
+use crate::{ errors::{ExecutionErr, ExecutionResult}, model::{Database, DatabaseKey, Table}};
 use super::super::{AnyDatabase};
 use crate::parsing::CreateSt;
 
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr};
-
-
 
 
 #[derive(Debug)]
@@ -16,6 +14,14 @@ pub struct Create<'a>{
 
 
 impl<'a> Create<'a> {
+    pub fn build_exec(db: &'a mut AnyDatabase, st: CreateSt) -> DatabaseResult<()>{
+        let c = Self::new(db,st);
+        c.execute()?;
+        Ok(())
+    }
+
+
+
     pub fn new(db: &'a mut AnyDatabase, st: CreateSt) -> Self{
         Self { db, st }
     }
@@ -66,7 +72,7 @@ pub mod test{
     use std::collections::HashMap;
 
     use super::*;
-    use crate::parsing::*;
+    use crate::{model::ValueType, parsing::*};
     #[test]
     pub fn test() {
         let query =

@@ -4,7 +4,7 @@ use pest_derive::Parser;
 
 use std::collections::HashMap;
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr, ParsingErr, ParsingResult};
-use crate::model::{ValueType, Value};
+use crate::model::{AnyDatabase, Database, Value, ValueType};
 use super::{Statement, CreateSt, InsertSt};
 
 #[derive(Parser)]
@@ -14,6 +14,19 @@ pub struct SQLParser;
 
 
 impl SQLParser {
+    pub fn run_query(query: &str, db : &mut AnyDatabase) -> DatabaseResult<()>{
+        let v = Self::parse_sql(query)?;
+        for st in v{
+            st.run(db)?;
+        }
+
+
+        Ok(())
+    }
+
+
+
+
     pub fn parse_sql(query: &str) -> DatabaseResult<Vec<Statement>> {
         let pairs=  SQLParser::parse(Rule::sql,query);
         let pairs = match pairs{
@@ -306,6 +319,5 @@ pub mod test{
         assert!(matches!(sts[2], Statement::Insert(_)));
         assert!(matches!(sts[3], Statement::NoStatement));
     }
-
-
 }
+

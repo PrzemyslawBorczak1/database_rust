@@ -1,7 +1,7 @@
 
 use thiserror::Error;
 
-use crate::model::{Value, ValueType};
+use crate::model::{ValueType};
 
 
 pub type ExecutionResult<T> = std::result::Result<T, ExecutionErr>;
