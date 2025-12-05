@@ -22,7 +22,7 @@ impl<'a, K : DatabaseKey> Insert<'a, K> {
         ExecutionErr::wrap_result( i.execute(), StatementErr::Insert)
     }
 
-    fn from (db : &'a mut Database<K>, st: InsertSt) -> ExecutionResult<Self>{
+    pub fn from (db : &'a mut Database<K>, st: InsertSt) -> ExecutionResult<Self>{
         let table = match db.get_table(&st.table_name){
             None => return  Err(ExecutionErr::NoTable(st.table_name.clone())),
             Some(x) => x
@@ -136,7 +136,7 @@ pub mod test{
     use super::*;
     use crate::{model::{Create, Value}, parsing::*};
     #[test]
-    pub fn execute_insert() {
+    pub fn execute_insert_string() {
         let query =
             "CREATE t KEY a FIELDS a: String, c: Bool,  b : Float
             Insert a =  a, b = 1.0 c = false into t
@@ -182,4 +182,48 @@ pub mod test{
         assert_eq!(rec.get(&"b".to_string()).unwrap().fields, exp);
 
     }
+
+    #[test]
+pub fn execute_insert_int() {
+    let query =
+        "CREATE t KEY id FIELDS id: Int, qty: Int, price: Int
+        Insert id = 1, qty = 5 price = 100 into t
+        Insert id = 2, qty = 3 price = 50 into t";
+
+    let sts = SQLParser::parse_sql(query).unwrap();
+    let mut db: Database<i64> = Database::new();
+
+    if let Statement::Create(st) = sts[0].clone() {
+        Create::new(&mut db, st).execute().unwrap()
+    } else {
+        panic!();
+    }
+
+    if let Statement::Insert(st) = sts[1].clone() {
+        Insert::from(&mut db, st).unwrap().execute().unwrap()
+    } else {
+        panic!();
+    }
+
+    if let Statement::Insert(st) = sts[2].clone() {
+        Insert::from(&mut db, st).unwrap().execute().unwrap()
+    } else {
+        panic!();
+    }
+
+    let table = db.get_table(&"t".to_string()).unwrap();
+    let rec = table.get_records();
+
+    let exp = HashMap::from([
+        ("qty".to_string(), Value::Int(5)),
+        ("price".to_string(), Value::Int(100)),
+    ]);
+    assert_eq!(rec.get(&1).unwrap().fields, exp);
+
+    let exp = HashMap::from([
+        ("qty".to_string(), Value::Int(3)),
+        ("price".to_string(), Value::Int(50)),
+    ]);
+    assert_eq!(rec.get(&2).unwrap().fields, exp);
+}
 }

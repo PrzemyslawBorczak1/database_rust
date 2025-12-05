@@ -4,4 +4,4 @@ pub mod database;
 
 pub use table::{ValueType, Value, Table, Record};
 pub use database::{AnyDatabase, Database, DatabaseKey};
-pub use commands::{Create};
+pub use commands::{Create, Insert, Read, Delete, Command};

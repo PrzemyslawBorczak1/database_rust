@@ -13,7 +13,7 @@ KW_INTO = {^"INTO" | ^"I"}
 KW_DELETE = _{^"DELETE" | ^"D"}
 KW_FROM = _{^"FROM" | ^"F"}
 
-KW_READ_FROM = _{^"READ_FROM" | ^"R"}
+KW_READ = _{^"READ_FROM" | ^"READ" | ^"R" | ^"R_F"}
 
 
 TYPE = {string_type | int_type | float_type | bool_type}
@@ -60,8 +60,8 @@ value = { float | int | bool | string }
 assigment = {field_name ~ EQUAL ~ value ~ COMA?}
 
 // delete query
-delete = {KW_DELETE ~ key_name ~ KW_FROM ~ table_name}
+delete = {KW_DELETE ~ key_name ~ KW_FROM ~ table_name ~ COMA?}
 
 // read from file
 file_path = @{(string | "/" | "\\" | "." | ":")+}
-read_from = {KW_READ_FROM ~ file_path}
+read_from = {KW_READ ~ file_path ~ COMA?}

@@ -334,14 +334,47 @@ pub mod test{
         let query = 
                 "CREATE library KEY id FIELDS id: String, title: String, 
                 CREATE lib Key i F i:String,
-                INSERT a = 2,  b = true, c = true, d = 9.33 INTO t1";
+                INSERT a = 2,  b = true, c = true, d = 9.33 INTO t1
+                DELETE a  FROM t1
+                READ_FROM ./some/path/to/somewhere
+                DELETE b FROM ty";
         let sts = SQLParser::parse_sql(query).unwrap();
-        
+
 
         assert!(matches!(sts[0], Statement::Create(_)));
         assert!(matches!(sts[1], Statement::Create(_)));
         assert!(matches!(sts[2], Statement::Insert(_)));
-        assert!(matches!(sts[3], Statement::NoStatement));
+        assert!(matches!(sts[3], Statement::Delete(_)));
+        assert!(matches!(sts[4], Statement::Read(_)));
+        assert!(matches!(sts[5], Statement::Delete(_)));
+        assert!(matches!(sts[6], Statement::NoStatement));
     }
+
+
+    #[test]
+     pub fn build_statement_should_fail(){
+        let query =  "CRTE library KEY id FIELDS id: String, title: String,";
+        let sts = SQLParser::parse_sql(query);
+        assert!(sts.is_err());
+        
+        let query =  "CREATE library KEY id FIELDS id STRING id STRING";
+        let sts = SQLParser::parse_sql(query);
+        assert!(sts.is_err());
+
+        let query =  "INSERT a = a a = b INTO a";
+        let sts = SQLParser::parse_sql(query);
+        assert!(sts.is_err());
+
+        let query =  "D a ";
+        let sts = SQLParser::parse_sql(query);
+        assert!(sts.is_err());
+
+        
+        let query =  "R  ";
+        let sts = SQLParser::parse_sql(query);
+        assert!(sts.is_err());
+    }
+
+
 }
 

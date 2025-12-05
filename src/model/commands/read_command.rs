@@ -44,3 +44,66 @@ impl<'a, K : DatabaseKey> Command for Read<'a, K> {
         
     }
 }
+
+
+#[cfg(test)]
+pub mod test{
+    use super::*;
+    use crate::parsing::Statement;
+    use crate::parsing::SQLParser;
+    
+    use std::collections::HashMap;
+
+    use super::*;
+    use crate::{model::{Create, Value}, parsing::*};
+
+    #[test]
+    pub fn execute_read_string() {
+        let query = "READ_FROM ./src/example_files/test1_str.txt";
+        let sts = SQLParser::parse_sql(query).unwrap();
+
+        match &sts[0] {
+            Statement::Read(actual) => {
+                assert_eq!(actual.path, "./src/example_files/test1_str.txt".to_string());
+            }
+            _ => panic!(),
+        }
+
+        let mut db: Database<String> = Database::new();
+        if let Statement::Read(st) = sts[0].clone() {
+            let res = Read::new(&mut db, st).execute();
+            println!("{res:#?}");
+            assert!(res.is_ok());
+        }
+        else {
+                panic!();
+        }
+    }
+
+    #[test]
+    pub fn execute_read_int() {
+        let query = "READ_FROM ./src/example_files/test2_int.txt";
+        let sts = SQLParser::parse_sql(query).unwrap();
+
+        match &sts[0] {
+            Statement::Read(actual) => {
+                assert_eq!(actual.path, "./src/example_files/test2_int.txt".to_string());
+            }
+            _ => panic!(),
+        }
+
+        let mut db: Database<i64> = Database::new();
+        if let Statement::Read(st) = sts[0].clone() {
+            let res = Read::new(&mut db, st).execute();
+            println!("{res:#?}");
+            assert!(res.is_ok());
+        } else {
+            panic!();
+        }
+    }
+
+}
+
+
+
+

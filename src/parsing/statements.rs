@@ -95,8 +95,6 @@ pub mod test{
     use super::super::*;
     use crate::model::*;
 
-    
-
 
     #[test]
     pub fn build_create_statement_test(){
@@ -114,9 +112,9 @@ pub mod test{
                     ("title".to_string(), ValueType::Int),
                 ]);
                 let expected = CreateSt::new("library".to_string(), "id".to_string(), expected_fields);
-                assert_eq!(&expected, actual, "Incorrect create statement (index 0)");
+                assert_eq!(&expected, actual);
             }
-            other => panic!("Expected Create at index 0, got {other:#?}"),
+            _ => panic!(),
         }
 
 
@@ -128,12 +126,14 @@ pub mod test{
                     ("k".to_string(), ValueType::Int),
                 ]);
                 let expected = CreateSt::new("lib".to_string(), "i".to_string(), expected_fields);
-                assert_eq!(&expected, actual, "Incorrect create statement (index 1)");
+                assert_eq!(&expected, actual);
             }
-            other => panic!("Expected Create at index 1, got {other:#?}"),
+            _ => panic!(),
         }
     }
 
+
+    
      #[test]
     pub fn build_insert_statement_test(){
         let query = 
@@ -141,8 +141,8 @@ pub mod test{
                 INsert a = was b= 0.0 c = c d = true into a";
 
         let sts = SQLParser::parse_sql(query).unwrap();
-        
-         match &sts[0] {
+
+        match &sts[0] {
             Statement::Insert(actual) => {
                 let expected_fields = HashMap::from([
                     ("a".to_string(), Value::Int(1)),
@@ -151,12 +151,11 @@ pub mod test{
                     ("d".to_string(), Value::Bool(false)),
                 ]);
                 let expected = InsertSt::new("a".to_string(), expected_fields);
-                assert_eq!(&expected, actual, "Incorrect insert statement (index 0)");
+                assert_eq!(&expected, actual);
             }
-            other => panic!("Expected Insert at index 0, got {other:#?}"),
+            _ => panic!(),
         }
 
-        // Second insert
         match &sts[1] {
             Statement::Insert(actual) => {
                 let expected_fields = HashMap::from([
@@ -166,10 +165,61 @@ pub mod test{
                     ("d".to_string(), Value::Bool(true)),
                 ]);
                 let expected = InsertSt::new("a".to_string(), expected_fields);
-                assert_eq!(&expected, actual, "Incorrect insert statement (index 1)");
+                assert_eq!(&expected, actual);
             }
-            other => panic!("Expected Insert at index 1, got {other:#?}"),
+            _ => panic!(),
         }
     }
 
+
+     #[test]
+    pub fn build_delete_statement_test(){
+          let query = 
+            "DELETE a FROM b,
+            DELETE b FROM a";
+
+        let sts = SQLParser::parse_sql(query).unwrap();
+
+        match &sts[0] {
+            Statement::Delete(actual) => {
+                let expected = DeleteSt::new("b".to_string(), "a".to_string());
+                assert_eq!(&expected, actual);
+            }
+            _ => panic!(),
+        }
+
+        match &sts[1] {
+            Statement::Delete(actual) => {
+                let expected = DeleteSt::new("a".to_string(), "b".to_string());
+                assert_eq!(&expected, actual);
+            }
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    pub fn build_read_statement_test(){
+         let query =
+            "READ_FROM ./data/input.txt
+            READ .\\some\\path\\to\\somewhere";
+
+        let sts = SQLParser::parse_sql(query).unwrap();
+
+        match &sts[0] {
+            Statement::Read(actual) => {
+                let expected = ReadSt::new("./data/input.txt".to_string());
+                assert_eq!(&expected, actual);
+            }
+            _ => panic!(),
+        }
+
+        match &sts[1] {
+            Statement::Read(actual) => {
+                let expected = ReadSt::new(".\\some\\path\\to\\somewhere".to_string());
+                assert_eq!(&expected, actual);
+            }
+            _ => panic!(),
+        }
+
+    }
 }
