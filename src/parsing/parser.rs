@@ -17,17 +17,17 @@ impl SQLParser {
     pub fn run_query(query: &str, db : &mut AnyDatabase) -> DatabaseResult<()>{
         match db {
             AnyDatabase::StringDatabase(db) => {
-                Self::run(&query.to_string(), db)?;
+                Self::run(query, db)?;
             }
             AnyDatabase::IntDatabase(db ) => {
-                Self::run(&query.to_string(),db)?;
+                Self::run(query,db)?;
             }
         }
        
         Ok(())
     }
 
-    pub fn run<K : DatabaseKey>(query :&String,  db : &mut Database<K>) -> DatabaseResult<()>{
+    pub fn run<K : DatabaseKey>(query : &str,  db : &mut Database<K>) -> DatabaseResult<()>{
         
         let v = Self::parse_sql(query)?;
         for st in v{

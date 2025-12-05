@@ -95,10 +95,7 @@ impl DatabaseKey for i64 {
 
     fn as_key_string(val : String) -> Option<Self> {
         let p = val.parse::<i64>();
-        match p { 
-            Ok(v) => Some(v),
-            Err(_) => None,
-        }
+        p.ok()
     }
 }
 

@@ -115,7 +115,7 @@ impl<'a, K : DatabaseKey> Command for Insert<'a ,K > {
 
         let (pk, pk_v, val_key) = self.handle_pk()?;
 
-        self.fill_and_validate(&mut rec, &pk)?;
+        self.fill_and_validate(&mut rec, pk)?;
 
         if self.table.add_record(val_key, rec).is_some() {
             return Err(ExecutionErr::RepeatedRecord(pk_v.clone()));
