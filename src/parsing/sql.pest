@@ -13,6 +13,9 @@ KW_INTO = {^"INTO" | ^"I"}
 KW_DELETE = _{^"DELETE" | ^"D"}
 KW_FROM = _{^"FROM" | ^"F"}
 
+KW_READ_FROM = _{^"READ_FROM" | ^"R"}
+
+
 TYPE = {string_type | int_type | float_type | bool_type}
 string_type = {^"STRING" | ^"STR"}
 int_type = {^"INT" | ^"INTEGER"}
@@ -29,7 +32,8 @@ FLOAT_SEPARATOR = {"."}
 sql = _{SOI ~ (
     create |
     insert |
-    delete
+    delete |
+    read_from
     )* ~ EOI}
 
 
@@ -57,3 +61,7 @@ assigment = {field_name ~ EQUAL ~ value ~ COMA?}
 
 // delete query
 delete = {KW_DELETE ~ key_name ~ KW_FROM ~ table_name}
+
+// read from file
+file_path = @{(string | "/" | "\\" | "." | ":")+}
+read_from = {KW_READ_FROM ~ file_path}

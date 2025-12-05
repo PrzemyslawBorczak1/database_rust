@@ -12,7 +12,7 @@ pub type ParsingResult<T> = std::result::Result<T, ParsingErr>;
 
 #[derive(Error, Debug, Clone)]
 pub enum ParsingErr {
-    #[error("Pest parrser error (format of command or parse grammar is incorrect)\n\nerror:\n{0:#?}")]
+    #[error("Pest parrser error (format of command or parse grammar is incorrect)")]
     PestError(Box<error::Error<Rule>>),
 
     

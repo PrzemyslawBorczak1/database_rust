@@ -1,6 +1,6 @@
 
 use crate::errors::{ExecutionErr, ExecutionResult, DatabaseResult, StatementErr};
-use crate::model::{Database, DatabaseKey, Table, ValueType, table};
+use crate::model::{Database, DatabaseKey, Table};
 use crate::parsing::DeleteSt;
 use super::Command;
 

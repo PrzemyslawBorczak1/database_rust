@@ -7,6 +7,7 @@ pub use statements::{
     Statement,
     CreateSt,
     InsertSt,
-    DeleteSt
+    DeleteSt,
+    ReadSt,
 };
 

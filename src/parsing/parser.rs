@@ -5,6 +5,7 @@ use pest_derive::Parser;
 use std::collections::HashMap;
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr, ParsingErr, ParsingResult};
 use crate::model::{AnyDatabase, Value, ValueType};
+use crate::parsing::ReadSt;
 use super::{Statement, CreateSt, InsertSt, DeleteSt};
 
 #[derive(Parser)]
@@ -61,6 +62,7 @@ impl SQLParser {
             Rule::create => Self::build_create(&mut pair.into_inner()),
             Rule::insert => Self::build_insert(& mut pair.into_inner()),
             Rule::delete => Self::build_delete(& mut pair.into_inner()),
+            Rule::read_from => Self::build_read_from(& mut pair.into_inner()),
 
             Rule::EOI =>  Ok(Statement::NoStatement),
 
@@ -107,6 +109,12 @@ impl SQLParser {
         }
     }
 
+    fn next_pair<'a>(p :&'a mut Pairs<Rule>) -> DatabaseResult<Pair<'a, Rule>>{
+        let ret: Pair<'a, Rule> = ParsingErr::wrap_result(
+            Self::check_argument(p.next()),
+            StatementErr::Delete)?;
+        Ok(ret)
+    }
 }
 
 
@@ -290,26 +298,30 @@ impl SQLParser{
         Ok(next.as_str())
     }
 
+}
 
-    }
-
+// parsing of delete
 impl SQLParser{
     fn build_delete(p :&mut Pairs<Rule>) -> DatabaseResult<Statement>{
-        let key = 
-            ParsingErr::wrap_result(
-                Self::check_argument(p.next()),
-                StatementErr::Delete)?.as_str();
+        let key = Self::next_pair(p)?.as_str().to_string();
 
-        let table_name = 
-            ParsingErr::wrap_result(
-                Self::check_argument(p.next()),
-                StatementErr::Delete)?.as_str();
+        let table_name = Self::next_pair(p)?.as_str().to_string();
         
-        Ok(Statement::Delete(DeleteSt::new(table_name.to_string(), key.to_string())))
+        Ok(Statement::Delete(DeleteSt::new(table_name, key)))
     }
-
-
 }
+
+// parsing of read from
+impl SQLParser{
+    fn build_read_from(p :&mut Pairs<Rule>) -> DatabaseResult<Statement>{
+        let file_path = Self::next_pair(p)?.as_str().to_string();
+        Ok(Statement::Read(ReadSt::new(file_path)))
+    }
+}
+
+
+
+
 
 #[cfg(test)]
 pub mod test{

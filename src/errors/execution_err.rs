@@ -2,7 +2,7 @@
 use thiserror::Error;
 
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr};
-use crate::model::{ Table, Value, ValueType};
+use crate::model::{ Value, ValueType};
 
 
 pub type ExecutionResult<T> = std::result::Result<T, ExecutionErr>;
@@ -61,7 +61,15 @@ pub enum ExecutionErr {
     NoKeyStr(String, String),
 
     #[error("Couldnt parse '{0}' to {1:?}")]
-    CouldntParse(String, ValueType)
+    CouldntParse(String, ValueType),
+    
+    #[error("Couldnt read file '{0}'")]
+    CouldntReadFile(String),
+
+
+    #[error(transparent)]
+    ExecutingError(#[from]Box<DatabaseErr>),
+
 
     
 }
