@@ -1,26 +1,61 @@
+use clap::Parser;
+use std::io::{self, Write};
 
-use database::{model::{AnyDatabase, Database}, parsing::{Rule, SQLParser}};
-use pest::Parser;
+use database::model::{AnyDatabase,Database};
+use database::parsing::SQLParser;
 
+
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    #[arg(long = "db")]
+    db: String,
+}
 
 fn main() {
-    let query = 
-                "CREATE library KEY id FIELDS id: String, title: Int, 
-                CREATE lib Key i F i:String,
-                Insert id = a title = 1 I library
-                Insert id = b title = 1 I library
-                READ_FROM C:\\Users\\przem\\Pulpit\\test6.txt
-                D b F library
-                ";
+    let cli = Cli::parse();
+
+    let kind = cli.db.trim().to_lowercase();
+    let mut db = match kind.as_str() {
+        "int" | "i" => AnyDatabase::IntDatabase(Database::new()),
+        "string" | "s" => AnyDatabase::StringDatabase(Database::new()),
+        other => {
+            eprintln!("Invalid --db '{other}'. Use 'string(s)' or 'int(i)'.");
+            std::process::exit(1);
+        }
+    };
+    run_query_loop(&mut db);
+}
 
 
-    let mut db = AnyDatabase::StringDatabase(Database::new());
-    if let Err(x) = SQLParser::run_query(query, &mut db){
-        println!("{x}");
+
+fn run_query_loop(db: &mut AnyDatabase) {
+   
+    loop {
+        print!("sql> ");
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        if io::stdin().read_line(&mut input).is_err() {
+            println!("Error reading input");
+            continue;
+        }
+
+        let input = input.trim();
+
+        if input.eq_ignore_ascii_case("exit") || input.eq_ignore_ascii_case("/exit") {
+            println!("Bye.");
+            break;
+        }
+
+        if !input.is_empty() {
+            execute_query(db, input);
+        }
     }
-    
+}
 
-   // println!("{db:#?}");
-
-
+fn execute_query(db: &mut AnyDatabase, query: &str) {
+    if let Err(e) = SQLParser::run_query(query, db) {
+        println!("{e}");
+    }
 }

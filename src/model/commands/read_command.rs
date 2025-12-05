@@ -52,10 +52,6 @@ pub mod test{
     use crate::parsing::Statement;
     use crate::parsing::SQLParser;
     
-    use std::collections::HashMap;
-
-    use super::*;
-    use crate::{model::{Create, Value}, parsing::*};
 
     #[test]
     pub fn execute_read_string() {
