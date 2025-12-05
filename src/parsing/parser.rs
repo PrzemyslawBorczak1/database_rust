@@ -4,7 +4,7 @@ use pest_derive::Parser;
 
 use std::collections::HashMap;
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr, ParsingErr, ParsingResult};
-use crate::model::{AnyDatabase, Value, ValueType};
+use crate::model::{AnyDatabase, Database, DatabaseKey, Value, ValueType};
 use crate::parsing::ReadSt;
 use super::{Statement, CreateSt, InsertSt, DeleteSt};
 
@@ -15,23 +15,26 @@ pub struct SQLParser;
 
 impl SQLParser {
     pub fn run_query(query: &str, db : &mut AnyDatabase) -> DatabaseResult<()>{
-        let v = Self::parse_sql(query)?;
         match db {
             AnyDatabase::StringDatabase(db) => {
-                for st in v{
-                    st.run(db)?;
-                }
+                Self::run(&query.to_string(), db)?;
             }
             AnyDatabase::IntDatabase(db ) => {
-                for st in v{
-                    st.run(db)?;
-                }
+                Self::run(&query.to_string(),db)?;
             }
         }
        
         Ok(())
     }
 
+    pub fn run<K : DatabaseKey>(query :&String,  db : &mut Database<K>) -> DatabaseResult<()>{
+        
+        let v = Self::parse_sql(query)?;
+        for st in v{
+            st.run(db)?;
+        };
+        Ok(())
+    }
 
 
 

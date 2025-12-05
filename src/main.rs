@@ -9,7 +9,7 @@ fn main() {
                 CREATE lib Key i F i:String,
                 Insert id = a title = 1 I library
                 Insert id = b title = 1 I library
-                READ_FROM C:\\Users\\przem\\Pulpit\\rustDB.txt
+                READ_FROM C:\\Users\\przem\\Pulpit\\test6.txt
                 D b F library
                 ";
 
