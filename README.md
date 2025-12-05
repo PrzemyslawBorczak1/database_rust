@@ -1,3 +1,7 @@
+# Description
+
+A simple in-memory database written in Rust with a custom SQL-like grammar powered by the `pest` parser
+
 ## Struktura projektu
 
 Projekt składa się z trzech modułów:
@@ -33,15 +37,40 @@ Główną strukturą opisującą błąd jest `DatabaseErr`, która określa:
 - rodzaj błędu (parsowanie lub wykonanie),
 - komendę (`Statement`), której błąd dotyczy.
 
-
 ---
 
 ## Komendy
 
-- **CREATE**: tworzy tabelę z nazwą, kluczem głównym oraz schematem pól.
-- **INSERT**: dodaje rekord z wartościami zgodnymi ze schematem tabeli.
-- **DELETE**: usuwa rekord na podstawie wartości klucza głównego.
-- **READ_FROM**: wczytuje i wykonuje komendy z pliku tekstowego.
+**CREATE** – tworzy tabelę z nazwą, kluczem głównym oraz schematem pól.  
+Przykład składni:
+[CREATE|C] table [KEY|K] primary_key [FIELDS|F] key: Type, field1: Type, field2: Type
+
+**INSERT** – dodaje rekord z wartościami zgodnymi ze schematem tabeli.  
+Przykład składni:
+[INSERT|I] field1 = val1, field2 = val2 [INTO|I] table
+
+**DELETE** – usuwa rekord na podstawie wartości klucza głównego.  
+Przykład składni:
+[DELETE|D] key_value [FROM] table
+
+**READ_FROM** – wczytuje i wykonuje komendy z pliku tekstowego.  
+Przykład składni:
+[READ_FROM|READ|R|R_F] path/to/file
 
 Obsługiwane typy pól: `String`, `Int`, `Float`, `Bool`.  
-Klucz główny musi mieć typ zgodny z wybranym rodzajem bazy (stringowy lub całkowitoliczbowy).
+Klucz główny musi mieć typ zgodny z wybranym rodzajem bazy (`String` lub `Int`).
+
+Wszystkie przecinki, spacje oraz wielkość liter w komendach są opcjonalne.  
+Wyjątek stanowią nazwy pól – muszą być identyczne jak w schemacie tabeli.
+
+## Uruchamianie
+
+```cargo run -- --db int
+# lub
+cargo run -- --db string 
+```
+---
+
+##  Ulubiony modul
+
+Parsing z pest byl bardzo ciekawy w uzyciu
