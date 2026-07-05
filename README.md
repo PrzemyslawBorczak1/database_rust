@@ -65,12 +65,16 @@ Wyjątek stanowią nazwy pól – muszą być identyczne jak w schemacie tabeli.
 
 ## Uruchamianie
 
-```cargo run -- --db int
-# lub
-cargo run -- --db string 
+## Running the Program
+
+```bash
+cargo run -- --db int
+# or
+cargo run -- --db string
 ```
+
 ---
 
-##  Ulubiony modul
+## Ulubiony modul
 
 Parsing z pest byl bardzo ciekawy w uzyciu

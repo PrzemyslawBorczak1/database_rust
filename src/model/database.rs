@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use crate::model::Value;
+use crate::{errors::StatementErr, model::Value, parsing::Statement};
 
 use super::{Table, ValueType};
 
@@ -10,12 +10,14 @@ use super::{Table, ValueType};
 
 #[derive(Debug)]
 pub struct Database<K: DatabaseKey>{
+    log: Vec<Statement>,
     tables : HashMap<String, Table<K>>,
 }
 
 impl<K : DatabaseKey> Database<K> {
     pub fn new() -> Self{
         Self {
+            log: Vec::new(),
             tables: HashMap::new() 
         }
     }
@@ -34,6 +36,14 @@ impl<K : DatabaseKey> Database<K> {
 
     pub fn get_table<'a>(&'a mut self, table_name: &String) ->  Option<&'a mut Table<K>>{
         self.tables.get_mut(table_name)
+    }
+
+    pub fn add_log(&mut self, st: Statement){
+        self.log.push(st);
+    }
+    
+    pub fn get_log(&self) -> &Vec<Statement>{
+        &self.log
     }
 }
 

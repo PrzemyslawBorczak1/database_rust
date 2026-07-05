@@ -13,7 +13,9 @@ KW_INTO = {^"INTO" | ^"I"}
 KW_DELETE = _{^"DELETE" | ^"D"}
 KW_FROM = _{^"FROM" | ^"F"}
 
-KW_READ = _{^"READ_FROM" | ^"READ" | ^"R" | ^"R_F"}
+KW_READ = _{^"READ_FROM" | ^"READ" | ^"R_F" | ^"R"}
+
+KW_SAVE_AS = _{^"SAVE_AS" | ^"SAVE" | ^"S_A" | ^"S"}
 
 
 TYPE = {string_type | int_type | float_type | bool_type}
@@ -33,7 +35,8 @@ sql = _{SOI ~ (
     create |
     insert |
     delete |
-    read_from
+    read_from |
+    save_as
     )* ~ EOI}
 
 
@@ -65,3 +68,7 @@ delete = {KW_DELETE ~ key_name ~ KW_FROM ~ table_name ~ COMA?}
 // read from file
 file_path = @{(string | "/" | "\\" | "." | ":")+}
 read_from = {KW_READ ~ file_path ~ COMA?}
+
+
+// save as
+save_as = {KW_SAVE_AS ~ file_path ~ COMA}

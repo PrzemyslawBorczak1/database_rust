@@ -33,6 +33,7 @@ pub enum StatementErr{
     Insert,
     Delete,
     Read,
+    Save
 }
 
 
@@ -44,6 +45,7 @@ impl StatementErr{
             StatementErr::Insert => "INSERT",
             StatementErr::Delete => "DELETE",
             StatementErr::Read => "READ",
+            StatementErr::Save => "SAVE",
         }
     }
 }

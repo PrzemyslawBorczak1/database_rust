@@ -63,8 +63,8 @@ pub enum ExecutionErr {
     #[error("Couldnt parse '{0}' to {1:?}")]
     CouldntParse(String, ValueType),
     
-    #[error("Couldnt read file '{0}'")]
-    CouldntReadFile(String),
+    #[error("Encountered issue with writing or reading from file '{0}'")]
+    BadFile(String),
 
 
     #[error(transparent)]

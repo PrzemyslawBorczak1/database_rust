@@ -34,7 +34,7 @@ impl<'a, K : DatabaseKey> Command for Read<'a, K> {
         
         let file = match read_to_string(path) {
             Ok(x) => x,
-            Err(_) => return Err(ExecutionErr::CouldntReadFile(path.to_string()))
+            Err(_) => return Err(ExecutionErr::BadFile(path.to_string()))
         };
 
         match SQLParser::run(&file,self.db){
