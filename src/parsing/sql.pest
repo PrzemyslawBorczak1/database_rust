@@ -19,6 +19,12 @@ KW_SAVE_AS = _{^"SAVE_AS" | ^"SAVE" | ^"S_A" }
 
 KW_SELECT = _{^"SELECT" }
 
+KW_ORDER_BY = _{^"ORDER_BY" | "ORDERBY"}
+
+KW_LIMIT = _{^"LIMIT"}
+
+
+
 TYPE = {string_type | int_type | float_type | bool_type}
 string_type = {^"STRING" | ^"STR"}
 int_type = {^"INT" | ^"INTEGER"}
@@ -74,10 +80,18 @@ read_from = {KW_READ ~ file_path ~ COMA?}
 
 
 // save as
-save_as = {KW_SAVE_AS ~ file_path ~ COMA}
+save_as = {KW_SAVE_AS ~ file_path ~ COMA?}
 
 // select
 
 row_names = {   table_name ~ (COMA ~ table_name)* }
+
 all_rows = {STAR}
-select = {KW_SELECT ~ (all_rows | row_names) ~ KW_FROM ~ table_name ~ COMA?}
+row_name = {string}
+
+order_by = {KW_ORDER_BY ~ row_name}
+limit = {KW_LIMIT ~ int}
+modifier = {order_by | limit}
+
+
+select = {KW_SELECT ~ (all_rows | row_names) ~ KW_FROM ~ table_name ~ modifier* ~ COMA?}

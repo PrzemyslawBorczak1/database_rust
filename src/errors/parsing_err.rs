@@ -2,11 +2,8 @@ use pest::error;
 use thiserror::Error;
 
 use crate::errors::{DatabaseErr, DatabaseResult, StatementErr};
-use crate::model::{ ValueType};
+use crate::model::ValueType;
 use crate::parsing::Rule;
-
-
-
 
 pub type ParsingResult<T> = std::result::Result<T, ParsingErr>;
 
@@ -15,7 +12,6 @@ pub enum ParsingErr {
     #[error("Pest parrser error (format of command or parse grammar is incorrect)")]
     PestError(Box<error::Error<Rule>>),
 
-    
     #[error("Unrecognized rule {0:#?} in query")]
     UnknownRule(Rule),
 
@@ -29,37 +25,41 @@ pub enum ParsingErr {
     NoKeyName,
 
     #[error("Unexpected rule. Expected '{expected:#?}' got '{got:#?}'")]
-    UnexpectedRule   {
-            expected: Rule, 
-            got:  Rule,
-    },
+    UnexpectedRule { expected: Rule, got: Rule },
 
     #[error("No Type specified for field: '{0}'")]
     NoTypeFor(String),
-        
+
     #[error("No matching type found for rule: {0:?}")]
     UnknownTypeForRule(Rule),
 
-    
     #[error("No value specified for field: '{0}'")]
     NoValue(String),
 
-    
     #[error("Couldnt parse value '{0}' to {1:?}")]
     ParsingFromString(String, ValueType),
 
-    
     #[error("Column '{0}' appeared more than once")]
     RepeatedColumn(String),
-    
+
+    #[error("In query appeared unrecognized modifier: '{0}'")]
+    UnrecognizedModifier(String),
+
+    #[error("Modifers cant be repeated")]
+    RepeatedModifier,
 }
 
-
-impl ParsingErr{
-    pub fn wrap_result<T>(parsing_result : ParsingResult<T>, statement_err : StatementErr) -> DatabaseResult<T>{
-        match parsing_result{
+impl ParsingErr {
+    pub fn wrap_result<T>(
+        parsing_result: ParsingResult<T>,
+        statement_err: StatementErr,
+    ) -> DatabaseResult<T> {
+        match parsing_result {
             Ok(x) => Ok(x),
-            Err(e) => Err(DatabaseErr::ParsingError { error: e, statement: statement_err })
+            Err(e) => Err(DatabaseErr::ParsingError {
+                error: e,
+                statement: statement_err,
+            }),
         }
     }
 }

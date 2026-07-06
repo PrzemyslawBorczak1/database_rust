@@ -2,11 +2,12 @@ use pest::Parser;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use super::{CreateSt, DeleteSt, InsertSt, SelectSt, Statement};
+use std::collections::HashMap;
+
+use super::{CreateSt, DeleteSt, InsertSt, ReadSt, SaveSt, Statement};
+use super::{LimitSt, OrderBySt, SelectSt};
 use crate::errors::{DatabaseErr, DatabaseResult, ParsingErr, ParsingResult, StatementErr};
 use crate::model::{AnyDatabase, Database, DatabaseKey, Value, ValueType};
-use crate::parsing::{ReadSt, SaveSt};
-use std::collections::HashMap;
 
 #[derive(Parser)]
 #[grammar = "./src/parsing/sql.pest"]
@@ -322,6 +323,12 @@ impl SQLParser {
 }
 
 // select
+#[derive(Debug)]
+enum Modifier {
+    Limit(LimitSt),
+    OrderBy(OrderBySt),
+}
+
 impl SQLParser {
     fn build_select(p: &mut Pairs<Rule>) -> DatabaseResult<Statement> {
         let mut all_rows = false;
@@ -332,7 +339,37 @@ impl SQLParser {
 
         let table_name = ParsingErr::wrap_result(Self::parse_table_name(p), StatementErr::Select)?;
 
-        DatabaseResult::Ok(Statement::Select(SelectSt::new(rows, all_rows, table_name)))
+        let mut node = SelectSt::new(rows, all_rows, table_name);
+
+        while let Some(modifier) =
+            ParsingErr::wrap_result(Self::parse_modifier(p), StatementErr::Select)?
+        {
+            match modifier {
+                Modifier::Limit(st) => {
+                    if node.limit.is_none() {
+                        node.limit = Some(st);
+                    } else {
+                        return Err(Self::repeated_modifier_err());
+                    }
+                }
+                Modifier::OrderBy(st) => {
+                    if node.order_by.is_none() {
+                        node.order_by = Some(st);
+                    } else {
+                        return Err(Self::repeated_modifier_err());
+                    }
+                }
+            }
+        }
+
+        DatabaseResult::Ok(Statement::Select(node))
+    }
+
+    fn repeated_modifier_err() -> DatabaseErr {
+        DatabaseErr::ParsingError {
+            error: ParsingErr::RepeatedModifier,
+            statement: StatementErr::Select,
+        }
     }
 
     fn parse_row_names(pairs: &mut Pairs<Rule>, all_rows: &mut bool) -> ParsingResult<Vec<String>> {
@@ -355,6 +392,43 @@ impl SQLParser {
         let head = Self::check_argument(p.next())?;
         Self::check_rule(&head, Rule::table_name)?;
         Ok(String::from(head.as_str()))
+    }
+
+    fn parse_modifier(p: &mut Pairs<Rule>) -> ParsingResult<Option<Modifier>> {
+        if let Some(it) = p.next()
+            && Self::check_rule(&it, Rule::modifier).is_ok()
+        {
+            let modifier = Self::check_argument(it.into_inner().next())?;
+            match modifier.as_rule() {
+                Rule::limit => {
+                    return Ok(Some(Self::parse_limit_modifier(
+                        &mut modifier.into_inner(),
+                    )?));
+                }
+                Rule::order_by => {
+                    return Ok(Some(Self::parse_order_by_modifier(
+                        &mut modifier.into_inner(),
+                    )?));
+                }
+                _ => {
+                    return Err(ParsingErr::UnrecognizedModifier(String::from(
+                        modifier.as_str(),
+                    )));
+                }
+            }
+        }
+        ParsingResult::Ok(None)
+    }
+
+    fn parse_limit_modifier(m: &mut Pairs<'_, Rule>) -> ParsingResult<Modifier> {
+        let vt = ValueType::Int;
+        let val: Result<u64, _> = m.as_str().parse();
+        let nb = Self::check_parsing_from_string(val, m.as_str(), vt)?;
+        Ok(Modifier::Limit(LimitSt(nb)))
+    }
+
+    fn parse_order_by_modifier(m: &mut Pairs<'_, Rule>) -> ParsingResult<Modifier> {
+        Ok(Modifier::OrderBy(OrderBySt(String::from(m.as_str()))))
     }
 }
 
@@ -407,10 +481,10 @@ pub mod test {
 
     #[test]
     pub fn build_select_should_work() {
-        let query = "SELECT * FROM tabela";
+        let query = "SELECT * FROM tabela Order_BY row Limit 12";
 
         let st = SQLParser::parse_sql(query);
 
-        println!("{:?}", st);
+        println!("{:#?}", st);
     }
 }

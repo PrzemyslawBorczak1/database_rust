@@ -101,7 +101,14 @@ pub struct SelectSt {
     pub rows: Vec<String>,
     pub all_rows: bool,
     pub table_name: String,
+    pub limit: Option<LimitSt>,
+    pub order_by: Option<OrderBySt>,
 }
+#[derive(Debug, Clone)]
+pub struct LimitSt(pub u64);
+
+#[derive(Debug, Clone)]
+pub struct OrderBySt(pub String);
 
 impl SelectSt {
     pub fn new(rows: Vec<String>, all_rows: bool, table_name: String) -> Self {
@@ -109,6 +116,8 @@ impl SelectSt {
             rows,
             all_rows,
             table_name,
+            limit: None,
+            order_by: None,
         }
     }
 }
