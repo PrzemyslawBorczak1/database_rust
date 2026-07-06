@@ -15,8 +15,9 @@ KW_FROM = _{^"FROM" | ^"F"}
 
 KW_READ = _{^"READ_FROM" | ^"READ" | ^"R_F" | ^"R"}
 
-KW_SAVE_AS = _{^"SAVE_AS" | ^"SAVE" | ^"S_A" | ^"S"}
+KW_SAVE_AS = _{^"SAVE_AS" | ^"SAVE" | ^"S_A" }
 
+KW_SELECT = _{^"SELECT" }
 
 TYPE = {string_type | int_type | float_type | bool_type}
 string_type = {^"STRING" | ^"STR"}
@@ -29,6 +30,7 @@ COLON = _{":"}
 COMA = _{","}
 EQUAL = _{"="}
 FLOAT_SEPARATOR = {"."}
+STAR = {"*"}
 
 
 sql = _{SOI ~ (
@@ -36,7 +38,8 @@ sql = _{SOI ~ (
     insert |
     delete |
     read_from |
-    save_as
+    save_as |
+    select
     )* ~ EOI}
 
 
@@ -72,3 +75,9 @@ read_from = {KW_READ ~ file_path ~ COMA?}
 
 // save as
 save_as = {KW_SAVE_AS ~ file_path ~ COMA}
+
+// select
+
+row_names = {   table_name ~ (COMA ~ table_name)* }
+all_rows = {STAR}
+select = {KW_SELECT ~ (all_rows | row_names) ~ KW_FROM ~ table_name ~ COMA?}

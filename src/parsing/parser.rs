@@ -2,7 +2,7 @@ use pest::Parser;
 use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
-use super::{CreateSt, DeleteSt, InsertSt, Statement};
+use super::{CreateSt, DeleteSt, InsertSt, SelectSt, Statement};
 use crate::errors::{DatabaseErr, DatabaseResult, ParsingErr, ParsingResult, StatementErr};
 use crate::model::{AnyDatabase, Database, DatabaseKey, Value, ValueType};
 use crate::parsing::{ReadSt, SaveSt};
@@ -61,6 +61,7 @@ impl SQLParser {
             Rule::delete => Self::build_delete(&mut pair.into_inner()),
             Rule::read_from => Self::build_read_from(&mut pair.into_inner()),
             Rule::save_as => Self::build_save_as(&mut pair.into_inner()),
+            Rule::select => Self::build_select(&mut pair.into_inner()),
 
             Rule::EOI => Ok(Statement::NoStatement),
 
@@ -320,6 +321,43 @@ impl SQLParser {
     }
 }
 
+// select
+impl SQLParser {
+    fn build_select(p: &mut Pairs<Rule>) -> DatabaseResult<Statement> {
+        let mut all_rows = false;
+        let rows = ParsingErr::wrap_result(
+            Self::parse_row_names(p, &mut all_rows),
+            StatementErr::Select,
+        )?;
+
+        let table_name = ParsingErr::wrap_result(Self::parse_table_name(p), StatementErr::Select)?;
+
+        DatabaseResult::Ok(Statement::Select(SelectSt::new(rows, all_rows, table_name)))
+    }
+
+    fn parse_row_names(pairs: &mut Pairs<Rule>, all_rows: &mut bool) -> ParsingResult<Vec<String>> {
+        let head = Self::check_argument(pairs.next())?;
+        if Self::check_rule(&head, Rule::all_rows).is_ok() {
+            *all_rows = true;
+            return Ok(Vec::new());
+        }
+        Self::check_rule(&head, Rule::row_names)?;
+        let mut ret = Vec::new();
+        *all_rows = false;
+        for p in head.into_inner() {
+            ret.push(String::from(p.as_str()));
+        }
+
+        ParsingResult::Ok(ret)
+    }
+
+    fn parse_table_name(p: &mut Pairs<Rule>) -> ParsingResult<String> {
+        let head = Self::check_argument(p.next())?;
+        Self::check_rule(&head, Rule::table_name)?;
+        Ok(String::from(head.as_str()))
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -365,5 +403,14 @@ pub mod test {
         let query = "R  ";
         let sts = SQLParser::parse_sql(query);
         assert!(sts.is_err());
+    }
+
+    #[test]
+    pub fn build_select_should_work() {
+        let query = "SELECT * FROM tabela";
+
+        let st = SQLParser::parse_sql(query);
+
+        println!("{:?}", st);
     }
 }

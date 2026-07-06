@@ -1,14 +1,5 @@
 pub mod parser;
 pub mod statements;
 
-
-pub use parser::{SQLParser, Rule};
-pub use statements::{
-    Statement,
-    CreateSt,
-    InsertSt,
-    DeleteSt,
-    ReadSt,
-    SaveSt,
-};
-
+pub use parser::{Rule, SQLParser};
+pub use statements::{CreateSt, DeleteSt, InsertSt, ReadSt, SaveSt, SelectSt, Statement};

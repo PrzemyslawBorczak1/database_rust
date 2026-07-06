@@ -2,7 +2,7 @@ use crate::{
     errors::DatabaseResult,
     model::{
         Create, Database, DatabaseKey, Value, ValueType,
-        commands::{Delete, Insert, Read, Save},
+        commands::{Delete, Insert, Read, Save, Select},
     },
 };
 use std::collections::HashMap;
@@ -15,6 +15,7 @@ pub enum Statement {
     Delete(DeleteSt),
     Read(ReadSt),
     Save(SaveSt),
+    Select(SelectSt),
 }
 
 impl Statement {
@@ -26,6 +27,7 @@ impl Statement {
             Statement::Delete(d) => Delete::build_exec(db, d)?,
             Statement::Read(r) => Read::build_exec(db, r)?,
             Statement::Save(s) => Save::build_exec(db, s)?,
+            Statement::Select(s) => Select::build_exec(db, s)?,
         }
 
         Ok(())
@@ -91,6 +93,23 @@ pub struct SaveSt {
 impl SaveSt {
     pub fn new(path: String) -> Self {
         Self { path }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SelectSt {
+    pub rows: Vec<String>,
+    pub all_rows: bool,
+    pub table_name: String,
+}
+
+impl SelectSt {
+    pub fn new(rows: Vec<String>, all_rows: bool, table_name: String) -> Self {
+        Self {
+            rows,
+            all_rows,
+            table_name,
+        }
     }
 }
 
