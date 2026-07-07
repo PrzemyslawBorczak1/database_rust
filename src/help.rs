@@ -56,20 +56,24 @@ DELETE (D)  -  delete a record by key
     DELETE Curie FROM scientists
 
 -------------------------------------------------------------
-SAVE_AS (SAVE, S_A)  -  save the database to a file
+SAVE_AS (SAVE, S_A)  -  dump the query log to a file
 -------------------------------------------------------------
   SAVE_AS <path>
 
+  Writes the log of every query executed so far in this session
+  to the given file (one entry per line).
   Example:
-    SAVE_AS ./data/db.txt
+    SAVE_AS ./data/session_log.txt
 
 -------------------------------------------------------------
-READ_FROM (READ, R_F, R)  -  load the database from a file
+READ_FROM (READ, R_F, R)  -  run queries from a file
 -------------------------------------------------------------
   READ_FROM <path>
 
+  Reads a file containing queries and executes them one by one,
+  as if they were typed into this shell.
   Example:
-    READ_FROM ./data/db.txt
+    READ_FROM ./src/example_files/scientists_select.txt
 
 =============================================================
   Field types
