@@ -64,7 +64,7 @@ impl<'a, K: DatabaseKey> Select<'a, K> {
                 return Err(ExecutionErr::NoDef(ob.0.clone()));
             }
             if ob.0 == pk {
-                records.sort_by(|(ka, _), (kb, _)| ka.cmp(kb));
+                records.sort_by_key(|(ka, _)| *ka);
             } else {
                 records.sort_by(|(_, a), (_, b)| {
                     match (a.fields.get(&ob.0), b.fields.get(&ob.0)) {
