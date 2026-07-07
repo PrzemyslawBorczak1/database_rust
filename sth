@@ -1,0 +1,15 @@
+READ_FROM ./src/example_files/scientists_select.txt
+CREATE scientists KEY name FIELDS active: Bool, field: String, name: String, publication_count: Int, rating: Float
+INSERT active = false, field = "Physics", name = "Newton", publication_count = 3, rating = 4.9 INTO scientists
+INSERT active = false, field = "Chemistry", name = "Curie", publication_count = 7, rating = 4.8 INTO scientists
+INSERT active = false, field = "Physics", name = "Einstein", publication_count = 5, rating = 5.0 INTO scientists
+INSERT active = false, field = "Biology", name = "Darwin", publication_count = 1, rating = 4.5 INTO scientists
+INSERT active = false, field = "Computing", name = "Lovelace", publication_count = 2, rating = 4.7 INTO scientists
+SELECT * FROM scientists
+SELECT name FROM scientists LIMIT 2
+SELECT name, publication_count FROM scientists ORDER_BY publication_count
+SELECT name, publication_count FROM scientists ORDER_BY publication_count LIMIT 3
+SELECT name, rating FROM scientists ORDER_BY rating LIMIT 2
+
+
+SAVE_AS sth

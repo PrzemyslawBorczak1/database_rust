@@ -5,9 +5,21 @@ use crate::model::DatabaseKey;
 #[derive(Debug, PartialEq, Clone)]
 pub enum ValueType{
     Bool,
-    String, 
+    String,
     Int,
     Float,
+}
+
+impl ValueType {
+    /// Nazwa typu tak, jak wystepuje w skladni CREATE ... FIELDS.
+    pub fn to_query_name(&self) -> &'static str {
+        match self {
+            ValueType::Bool => "Bool",
+            ValueType::String => "String",
+            ValueType::Int => "Int",
+            ValueType::Float => "Float",
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -35,6 +47,16 @@ impl Value{
             Value::Int(i) => i.to_string(),
             Value::Float(f) => f.to_string(),
             Value::String(s) => s.clone(),
+        }
+    }
+
+    /// Reprezentacja wartosci w skladni zapytania (dla SAVE_AS / to_query).
+    /// W odroznieniu od `to_display` gwarantuje, ze Float ma kropke dziesietna,
+    /// bo inaczej reparsowalby sie jako Int (np. 3.0 -> "3" -> Int).
+    pub fn to_query_value(&self) -> String {
+        match self {
+            Value::Float(f) if f.fract() == 0.0 && f.is_finite() => format!("{:.1}", f),
+            other => other.to_display(),
         }
     }
 

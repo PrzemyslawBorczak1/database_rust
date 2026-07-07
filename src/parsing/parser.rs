@@ -3,6 +3,7 @@ use pest::iterators::{Pair, Pairs};
 use pest_derive::Parser;
 
 use std::collections::HashMap;
+use std::ops::Add;
 
 use super::{CreateSt, DeleteSt, InsertSt, ReadSt, SaveSt, Statement};
 use super::{LimitSt, OrderBySt, SelectSt};
@@ -16,24 +17,34 @@ pub struct SQLParser;
 impl SQLParser {
     pub fn run_query(query: &str, db: &mut AnyDatabase) -> DatabaseResult<Option<String>> {
         match db {
-            AnyDatabase::StringDatabase(db) => {
-                Self::run(query, db)?;
-            }
-            AnyDatabase::IntDatabase(db) => {
-                Self::run(query, db)?;
-            }
+            AnyDatabase::StringDatabase(db) => Self::run(query, db),
+            AnyDatabase::IntDatabase(db) => Self::run(query, db),
         }
-
-        Ok(None)
     }
 
-    pub fn run<K: DatabaseKey>(query: &str, db: &mut Database<K>) -> DatabaseResult<()> {
+    pub fn run<K: DatabaseKey>(
+        query: &str,
+        db: &mut Database<K>,
+    ) -> DatabaseResult<Option<String>> {
+        let mut strings: Vec<String> = Vec::new();
         let v = Self::parse_sql(query)?;
         for st in v {
             db.add_log(st.clone());
-            st.run(db)?;
+            if let Some(s) = st.run(db)? {
+                strings.push(s);
+            }
         }
-        Ok(())
+
+        if strings.is_empty() {
+            Ok(None)
+        } else {
+            let mut ret = String::new();
+            for s in strings {
+                ret = ret.add(&s);
+            }
+
+            Ok(Some(ret))
+        }
     }
 
     pub fn parse_sql(query: &str) -> DatabaseResult<Vec<Statement>> {

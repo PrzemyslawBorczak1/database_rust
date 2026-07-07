@@ -59,9 +59,10 @@ fn run_query_loop(db: &mut AnyDatabase) {
 
 fn execute_query(db: &mut AnyDatabase, query: &str) {
     let res = SQLParser::run_query(query, db);
+
     if let Err(e) = res {
         println!("{e}");
     } else if let Ok(Some(s)) = res {
-        println!("{}", s);
+        println!("{s}");
     }
 }

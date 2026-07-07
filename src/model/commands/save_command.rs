@@ -39,7 +39,7 @@ impl<'a, K : DatabaseKey> Command for Save<'a, K> {
         };
         
         for st in self.db.get_log(){
-            match writeln!(file, "{:?}", st) {
+            match writeln!(file, "{}", st.to_query()) {
                 Ok(_) => {},
                 Err(_) => return Err(ExecutionErr::BadFile(self.st.path))
             }

@@ -35,6 +35,20 @@ impl Statement {
 
         Ok(None)
     }
+
+    /// Zamienia statement z powrotem na tekst zapytania SQL, ktory da sie
+    /// ponownie sparsowac. Uzywane przez SAVE_AS do zapisu logu jako SQL.
+    pub fn to_query(&self) -> String {
+        match self {
+            Statement::NoStatement => String::new(),
+            Statement::Create(c) => c.to_query(),
+            Statement::Insert(i) => i.to_query(),
+            Statement::Delete(d) => d.to_query(),
+            Statement::Read(r) => r.to_query(),
+            Statement::Save(s) => s.to_query(),
+            Statement::Select(s) => s.to_query(),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -51,6 +65,23 @@ impl CreateSt {
             schema,
         }
     }
+
+    pub fn to_query(&self) -> String {
+        // sortujemy pola, bo HashMap nie gwarantuje kolejnosci
+        let mut fields: Vec<(&String, &ValueType)> = self.schema.iter().collect();
+        fields.sort_by(|a, b| a.0.cmp(b.0));
+
+        let fields = fields
+            .iter()
+            .map(|(name, vt)| format!("{}: {}", name, vt.to_query_name()))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        format!(
+            "CREATE {} KEY {} FIELDS {}",
+            self.table_name, self.key_name, fields
+        )
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -62,6 +93,19 @@ pub struct InsertSt {
 impl InsertSt {
     pub fn new(table_name: String, fields: HashMap<String, Value>) -> Self {
         Self { table_name, fields }
+    }
+
+    pub fn to_query(&self) -> String {
+        let mut fields: Vec<(&String, &Value)> = self.fields.iter().collect();
+        fields.sort_by(|a, b| a.0.cmp(b.0));
+
+        let assigns = fields
+            .iter()
+            .map(|(name, val)| format!("{} = {}", name, val.to_query_value()))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        format!("INSERT {} INTO {}", assigns, self.table_name)
     }
 }
 
@@ -75,6 +119,10 @@ impl DeleteSt {
     pub fn new(table_name: String, key: String) -> Self {
         Self { table_name, key }
     }
+
+    pub fn to_query(&self) -> String {
+        format!("DELETE {} FROM {}", self.key, self.table_name)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -86,6 +134,10 @@ impl ReadSt {
     pub fn new(path: String) -> Self {
         Self { path }
     }
+
+    pub fn to_query(&self) -> String {
+        format!("READ_FROM {}", self.path)
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -96,6 +148,10 @@ pub struct SaveSt {
 impl SaveSt {
     pub fn new(path: String) -> Self {
         Self { path }
+    }
+
+    pub fn to_query(&self) -> String {
+        format!("SAVE_AS {}", self.path)
     }
 }
 
@@ -122,6 +178,25 @@ impl SelectSt {
             limit: None,
             order_by: None,
         }
+    }
+
+    pub fn to_query(&self) -> String {
+        let cols = if self.all_rows {
+            "*".to_string()
+        } else {
+            self.rows.join(", ")
+        };
+
+        let mut query = format!("SELECT {} FROM {}", cols, self.table_name);
+
+        if let Some(ob) = &self.order_by {
+            query.push_str(&format!(" ORDER_BY {}", ob.0));
+        }
+        if let Some(l) = &self.limit {
+            query.push_str(&format!(" LIMIT {}", l.0));
+        }
+
+        query
     }
 }
 
@@ -248,5 +323,45 @@ pub mod test {
             }
             _ => panic!(),
         }
+    }
+
+    #[test]
+    pub fn to_query_round_trips() {
+        // parsujemy zapytania, zamieniamy z powrotem na SQL, parsujemy ponownie
+        // i sprawdzamy, ze reprezentacja tekstowa jest stabilna (idempotentna).
+        let query = "
+            CREATE t KEY id FIELDS id: String, n: Int, r: Float, ok: Bool
+            INSERT id = \"a\", n = 5, r = 3.0, ok = true INTO t
+            DELETE \"a\" FROM t
+            SELECT n, r FROM t ORDER_BY n LIMIT 2
+            SELECT * FROM t
+        ";
+
+        let first: Vec<String> = SQLParser::parse_sql(query)
+            .unwrap()
+            .iter()
+            .map(Statement::to_query)
+            .filter(|q| !q.is_empty()) // pomijamy EOI / NoStatement
+            .collect();
+
+        // Float 3.0 musi zachowac kropke, inaczej wroci jako Int.
+        assert!(
+            first.iter().any(|q| q.contains("r = 3.0")),
+            "Float zgubil kropke: {first:?}"
+        );
+
+        // Ponowne sparsowanie wygenerowanego SQL musi dac te sama reprezentacje.
+        let rejoined = first.join("\n");
+        let second: Vec<String> = SQLParser::parse_sql(&rejoined)
+            .unwrap()
+            .iter()
+            .map(Statement::to_query)
+            .filter(|q| !q.is_empty())
+            .collect();
+
+        assert_eq!(
+            first, second,
+            "to_query nie jest stabilne po ponownym parsowaniu"
+        );
     }
 }
