@@ -19,7 +19,7 @@ pub enum Statement {
 }
 
 impl Statement {
-    pub fn run<K: DatabaseKey>(self, db: &mut Database<K>) -> DatabaseResult<()> {
+    pub fn run<K: DatabaseKey>(self, db: &mut Database<K>) -> DatabaseResult<Option<String>> {
         match self {
             Statement::NoStatement => {}
             Statement::Insert(i) => Insert::build_exec(db, i)?,
@@ -27,10 +27,13 @@ impl Statement {
             Statement::Delete(d) => Delete::build_exec(db, d)?,
             Statement::Read(r) => Read::build_exec(db, r)?,
             Statement::Save(s) => Save::build_exec(db, s)?,
-            Statement::Select(s) => Select::build_exec(db, s)?,
+            Statement::Select(s) => {
+                let s = Select::build_exec(db, s)?;
+                return Ok(Some(s));
+            }
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 

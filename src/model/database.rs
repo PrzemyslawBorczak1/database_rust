@@ -68,6 +68,9 @@ pub trait DatabaseKey : Debug + Ord + Clone {
     fn as_key_value(val : Value) -> Option<Self>;
 
     fn as_key_string(val : String) -> Option<Self>;
+
+    /// Tekstowa reprezentacja klucza do wyswietlania w wynikach SELECT.
+    fn to_display(&self) -> String;
 }
 
 
@@ -86,9 +89,12 @@ impl DatabaseKey for String{
     }
 
     fn as_key_string(val : String) -> Option<Self> {
-        Some(val)   
+        Some(val)
     }
-  
+
+    fn to_display(&self) -> String {
+        self.clone()
+    }
 }
 
 impl DatabaseKey for i64 {
@@ -106,6 +112,10 @@ impl DatabaseKey for i64 {
     fn as_key_string(val : String) -> Option<Self> {
         let p = val.parse::<i64>();
         p.ok()
+    }
+
+    fn to_display(&self) -> String {
+        self.to_string()
     }
 }
 

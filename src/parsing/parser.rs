@@ -14,7 +14,7 @@ use crate::model::{AnyDatabase, Database, DatabaseKey, Value, ValueType};
 pub struct SQLParser;
 
 impl SQLParser {
-    pub fn run_query(query: &str, db: &mut AnyDatabase) -> DatabaseResult<()> {
+    pub fn run_query(query: &str, db: &mut AnyDatabase) -> DatabaseResult<Option<String>> {
         match db {
             AnyDatabase::StringDatabase(db) => {
                 Self::run(query, db)?;
@@ -24,7 +24,7 @@ impl SQLParser {
             }
         }
 
-        Ok(())
+        Ok(None)
     }
 
     pub fn run<K: DatabaseKey>(query: &str, db: &mut Database<K>) -> DatabaseResult<()> {

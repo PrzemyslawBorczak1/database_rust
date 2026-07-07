@@ -1,9 +1,8 @@
 use clap::Parser;
 use std::io::{self, Write};
 
-use database::model::{AnyDatabase,Database};
+use database::model::{AnyDatabase, Database};
 use database::parsing::SQLParser;
-
 
 #[derive(Parser)]
 #[command(version)]
@@ -27,10 +26,7 @@ fn main() {
     run_query_loop(&mut db);
 }
 
-
-
 fn run_query_loop(db: &mut AnyDatabase) {
-   
     loop {
         print!("sql> ");
         io::stdout().flush().unwrap();
@@ -55,7 +51,10 @@ fn run_query_loop(db: &mut AnyDatabase) {
 }
 
 fn execute_query(db: &mut AnyDatabase, query: &str) {
-    if let Err(e) = SQLParser::run_query(query, db) {
+    let res = SQLParser::run_query(query, db);
+    if let Err(e) = res {
         println!("{e}");
+    } else if let Ok(Some(s)) = res {
+        println!("{}", s);
     }
 }

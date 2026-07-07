@@ -27,6 +27,29 @@ impl Value{
             Value::String(_) => ValueType::String,
         }
     }
+
+    /// Tekstowa reprezentacja wartosci do wyswietlania w wynikach SELECT.
+    pub fn to_display(&self) -> String {
+        match self {
+            Value::Bool(b) => b.to_string(),
+            Value::Int(i) => i.to_string(),
+            Value::Float(f) => f.to_string(),
+            Value::String(s) => s.clone(),
+        }
+    }
+
+    /// Porownanie dwoch wartosci na potrzeby ORDER_BY.
+    /// Rozne typy uznajemy za rowne (nieporownywalne).
+    pub fn compare(&self, other: &Value) -> std::cmp::Ordering {
+        use std::cmp::Ordering;
+        match (self, other) {
+            (Value::Int(a), Value::Int(b)) => a.cmp(b),
+            (Value::Float(a), Value::Float(b)) => a.partial_cmp(b).unwrap_or(Ordering::Equal),
+            (Value::String(a), Value::String(b)) => a.cmp(b),
+            (Value::Bool(a), Value::Bool(b)) => a.cmp(b),
+            _ => Ordering::Equal,
+        }
+    }
 }
 
 
