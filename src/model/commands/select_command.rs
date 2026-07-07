@@ -25,21 +25,18 @@ impl<'a, K: DatabaseKey> Select<'a, K> {
     }
 }
 
-/// Wynik zapytania SELECT: nazwy kolumn + wiersze wartosci (juz jako tekst).
 type QueryResult = (Vec<String>, Vec<Vec<String>>);
 
 impl<'a, K: DatabaseKey> Select<'a, K> {
-    /// Wykonuje SELECT i zwraca dane strukturalnie (bez formatowania).
-    /// Jeden potok obsluguje wszystkie kombinacje ORDER_BY / LIMIT:
-    ///   1. wybierz kolumny,  2. posortuj (ORDER_BY),  3. utnij (LIMIT),  4. zbuduj wiersze.
     fn collect_rows(&self) -> ExecutionResult<QueryResult> {
+        // gets table mentioned in select rows from TABLE
         let tb = self
             .db
             .get_tables()
             .get(&self.st.table_name)
             .ok_or_else(|| ExecutionErr::NoTable(self.st.table_name.clone()))?;
 
-        // 1. Kolumny do pokazania: SELECT * -> wszystkie (posortowane), inaczej wskazane.
+        // gets columns mentioned in select COLUMN from table
         let columns: Vec<String> = if self.st.all_rows {
             let mut cols: Vec<String> = tb.get_schema().keys().cloned().collect();
             cols.sort();
@@ -48,26 +45,25 @@ impl<'a, K: DatabaseKey> Select<'a, K> {
             self.st.rows.clone()
         };
 
-        // Walidacja: kazda zadana kolumna musi istniec w schemacie.
+        // checks if the schema of table is the same as this in query
+        let schema = tb.get_schema();
         for col in &columns {
-            if !tb.get_schema().contains_key(col) {
+            if !schema.contains_key(col) {
                 return Err(ExecutionErr::NoDef(col.clone()));
             }
         }
 
-        // Nazwa klucza glownego — jego wartosc siedzi w kluczu BTreeMap, nie w `fields`.
+        // gets pk
         let pk = tb.get_pk().clone();
 
-        // 2. Zbierz pary (klucz, rekord) — BTreeMap juz posortowane po kluczu.
         let mut records: Vec<(&K, &Record)> = tb.get_records().iter().collect();
 
-        // 3. ORDER_BY field (jesli podano).
+        // if order by is choosen
         if let Some(ob) = &self.st.order_by {
             if !tb.get_schema().contains_key(&ob.0) {
                 return Err(ExecutionErr::NoDef(ob.0.clone()));
             }
             if ob.0 == pk {
-                // sortowanie po kolumnie klucza — klucze sa Ord
                 records.sort_by(|(ka, _), (kb, _)| ka.cmp(kb));
             } else {
                 records.sort_by(|(_, a), (_, b)| {
@@ -79,13 +75,12 @@ impl<'a, K: DatabaseKey> Select<'a, K> {
             }
         }
 
-        // 4. LIMIT n (jesli podano) — dopiero po sortowaniu.
+        // if limit is choosen
         if let Some(l) = &self.st.limit {
             records.truncate(l.0 as usize);
         }
 
-        // 5. Zbuduj wiersze tekstowe w kolejnosci `columns`.
-        //    Kolumna klucza czytana z klucza mapy, reszta z `fields`.
+        // creates proper structure from record
         let rows: Vec<Vec<String>> = records
             .iter()
             .map(|(key, r)| {
@@ -105,9 +100,7 @@ impl<'a, K: DatabaseKey> Select<'a, K> {
         Ok((columns, rows))
     }
 
-    /// Sklada dane w wyrownana tabelke tekstowa do wyswietlenia.
     fn format_data((headers, rows): QueryResult) -> String {
-        // Szerokosc kazdej kolumny = max z naglowka i komorek.
         let mut widths: Vec<usize> = headers.iter().map(String::len).collect();
         for row in &rows {
             for (i, cell) in row.iter().enumerate() {
