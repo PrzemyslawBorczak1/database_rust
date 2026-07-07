@@ -41,6 +41,7 @@ impl SQLParser {
             let mut ret = String::new();
             for s in strings {
                 ret = ret.add(&s);
+                ret.push('\n');
             }
 
             Ok(Some(ret))

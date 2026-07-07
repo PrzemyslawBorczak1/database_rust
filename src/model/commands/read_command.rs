@@ -1,57 +1,53 @@
-
-use crate::errors::{ExecutionErr, ExecutionResult, DatabaseResult, StatementErr};
+use super::Command;
+use crate::errors::{DatabaseResult, ExecutionErr, ExecutionResult, StatementErr};
 use crate::model::{Database, DatabaseKey};
 use crate::parsing::{ReadSt, SQLParser};
-use super::Command;
-
 
 use std::fs::read_to_string;
 
 #[derive(Debug)]
-pub struct Read<'a, K : DatabaseKey>{
+pub struct Read<'a, K: DatabaseKey> {
     db: &'a mut Database<K>,
     st: ReadSt,
 }
 
-
-impl<'a, K : DatabaseKey> Read<'a, K> {
-    pub fn build_exec(db: &'a mut Database<K>, st: ReadSt) -> DatabaseResult<()>{
+impl<'a, K: DatabaseKey> Read<'a, K> {
+    pub fn build_exec(db: &'a mut Database<K>, st: ReadSt) -> DatabaseResult<Option<String>> {
         let r = Self::new(db, st);
 
-        ExecutionErr::wrap_result( r.execute(), StatementErr::Read)
+        let res = r.execute();
+        match res {
+            Err(e) => ExecutionErr::wrap_result(Err(e), StatementErr::Read),
+            Ok(s) => Ok(s),
+        }
     }
 
-    pub fn new(db: &'a mut Database<K>, st: ReadSt) -> Self{
-        Self{
-            db,st
-        }
+    pub fn new(db: &'a mut Database<K>, st: ReadSt) -> Self {
+        Self { db, st }
     }
 }
 
-impl<'a, K : DatabaseKey> Command for Read<'a, K> {
-    fn execute(self) -> ExecutionResult<()> {
+impl<'a, K: DatabaseKey> Read<'a, K> {
+    fn execute(self) -> ExecutionResult<Option<String>> {
         let path = self.st.path.trim();
-        
+
         let file = match read_to_string(path) {
             Ok(x) => x,
-            Err(_) => return Err(ExecutionErr::BadFile(path.to_string()))
+            Err(_) => return Err(ExecutionErr::BadFile(path.to_string())),
         };
 
-        match SQLParser::run(&file,self.db){
-            Ok(_) => Ok(()),
-            Err(e) => Err(ExecutionErr::ExecutingError(Box::new(e)))
+        match SQLParser::run(&file, self.db) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(ExecutionErr::ExecutingError(Box::new(e))),
         }
-        
     }
 }
 
-
 #[cfg(test)]
-pub mod test{
+pub mod test {
     use super::*;
-    use crate::parsing::Statement;
     use crate::parsing::SQLParser;
-    
+    use crate::parsing::Statement;
 
     #[test]
     pub fn execute_read_string() {
@@ -70,9 +66,8 @@ pub mod test{
             let res = Read::new(&mut db, st).execute();
             println!("{res:#?}");
             assert!(res.is_ok());
-        }
-        else {
-                panic!();
+        } else {
+            panic!();
         }
     }
 
@@ -97,9 +92,4 @@ pub mod test{
             panic!();
         }
     }
-
 }
-
-
-
-

@@ -25,7 +25,10 @@ impl Statement {
             Statement::Insert(i) => Insert::build_exec(db, i)?,
             Statement::Create(c) => Create::build_exec(db, c)?,
             Statement::Delete(d) => Delete::build_exec(db, d)?,
-            Statement::Read(r) => Read::build_exec(db, r)?,
+            Statement::Read(r) => {
+                let s = Read::build_exec(db, r)?;
+                return Ok(s);
+            }
             Statement::Save(s) => Save::build_exec(db, s)?,
             Statement::Select(s) => {
                 let s = Select::build_exec(db, s)?;
