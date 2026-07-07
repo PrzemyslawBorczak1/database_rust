@@ -84,7 +84,7 @@ READ_FROM (READ, R_F, R)  -  run queries from a file
   Bool (Boolean)    true / false
 
 =============================================================
-  Shell commands (REPL)
+  Shell commands
 =============================================================
   help              show this help
   exit              quit the program
