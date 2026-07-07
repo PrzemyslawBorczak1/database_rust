@@ -1,0 +1,18 @@
+CREATE scientists KEY name
+FIELDS name: String, publication_count: Int, field: String, rating: Float, active: Bool
+
+INSERT name = "Newton", publication_count = 3, field = "Physics", rating = 4.9, active = false INTO scientists
+INSERT name = "Curie", publication_count = 7, field = "Chemistry", rating = 4.8, active = false INTO scientists
+INSERT name = "Einstein", publication_count = 5, field = "Physics", rating = 5.0, active = false INTO scientists
+INSERT name = "Darwin", publication_count = 1, field = "Biology", rating = 4.5, active = false INTO scientists
+INSERT name = "Lovelace", publication_count = 2, field = "Computing", rating = 4.7, active = false INTO scientists
+
+SELECT * FROM scientists
+
+SELECT name FROM scientists LIMIT 2
+
+SELECT name, publication_count FROM scientists ORDER_BY publication_count
+
+SELECT name, publication_count FROM scientists ORDER_BY publication_count LIMIT 3
+
+SELECT name, rating FROM scientists ORDER_BY rating LIMIT 2

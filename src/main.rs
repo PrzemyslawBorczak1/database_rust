@@ -1,6 +1,7 @@
 use clap::Parser;
 use std::io::{self, Write};
 
+use database::help;
 use database::model::{AnyDatabase, Database};
 use database::parsing::SQLParser;
 
@@ -23,6 +24,7 @@ fn main() {
             std::process::exit(1);
         }
     };
+    println!("Database ready. Type 'help' for a list of commands or 'exit' to quit.");
     run_query_loop(&mut db);
 }
 
@@ -42,6 +44,11 @@ fn run_query_loop(db: &mut AnyDatabase) {
         if input.eq_ignore_ascii_case("exit") || input.eq_ignore_ascii_case("/exit") {
             println!("Bye.");
             break;
+        }
+
+        if input.eq_ignore_ascii_case("help") || input.eq_ignore_ascii_case("/help") {
+            println!("{}", help::help());
+            continue;
         }
 
         if !input.is_empty() {

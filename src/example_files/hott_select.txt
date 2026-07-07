@@ -1,0 +1,17 @@
+CREATE library KEY id
+FIELDS id: String, title: String, year: Int, pages: Int, rating: Float, topic: String, is_foundational: Bool
+
+INSERT id = "lib1", title = "Homotopy Type Theory: Univalent Foundations", year = 2013, pages = 600, rating = 4.8, topic = "Foundations", is_foundational = true INTO library
+INSERT id = "lib2", title = "Introduction to HoTT", year = 2018, pages = 320, rating = 4.2, topic = "Introductory", is_foundational = false INTO library
+INSERT id = "lib3", title = "Cubical Type Theory Notes", year = 2020, pages = 210, rating = 4.5, topic = "Cubical", is_foundational = false INTO library
+INSERT id = "lib4", title = "Synthetic Homotopy Theory", year = 2022, pages = 260, rating = 4.4, topic = "Synthetic", is_foundational = false INTO library
+
+SELECT * FROM library
+
+SELECT title, year FROM library ORDER_BY year
+
+SELECT title, rating FROM library ORDER_BY rating LIMIT 2
+
+SELECT id, pages FROM library ORDER_BY pages
+
+SELECT title FROM library LIMIT 3

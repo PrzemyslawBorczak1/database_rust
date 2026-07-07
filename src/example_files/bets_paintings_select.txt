@@ -1,0 +1,24 @@
+CREATE bets KEY better
+FIELDS better: String, amount_won: Int, sport: String
+
+INSERT better = "Alice", amount_won = 120, sport = "Tennis" INTO bets
+INSERT better = "Bob", amount_won = 300, sport = "Football" INTO bets
+INSERT better = "Carol", amount_won = 50, sport = "Chess" INTO bets
+INSERT better = "Dave", amount_won = 210, sport = "Football" INTO bets
+
+CREATE paintings KEY painter
+FIELDS painter: String, title: String, year: Int, price: Float
+
+INSERT painter = "Monet", title = "Water Lilies", year = 1916, price = 54.0 INTO paintings
+INSERT painter = "Dali", title = "The Persistence of Memory", year = 1931, price = 120.5 INTO paintings
+INSERT painter = "Klimt", title = "The Kiss", year = 1908, price = 150.0 INTO paintings
+INSERT painter = "Vermeer", title = "Girl with a Pearl Earring", year = 1665, price = 90.0 INTO paintings
+INSERT painter = "Hopper", title = "Nighthawks", year = 1942, price = 60.0 INTO paintings
+
+SELECT better, amount_won FROM bets ORDER_BY amount_won
+
+SELECT painter FROM paintings LIMIT 5
+
+SELECT * FROM paintings ORDER_BY year
+
+SELECT painter, price FROM paintings ORDER_BY price LIMIT 3
